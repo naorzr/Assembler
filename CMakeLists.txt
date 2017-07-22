@@ -7,5 +7,6 @@ set(CMAKE_C_STANDARD 90)
 set(SOURCE_FILES
         main.c
         logger.c
-        file_content.c)
+        file_content.c
+        assembler.c)
 add_executable(EndProject ${SOURCE_FILES})

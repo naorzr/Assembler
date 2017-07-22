@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include "logger.h"
 #include "file_content.h"
+#include "assembler.h"
 
 
 char *getword(FILE *inpf) {
@@ -28,6 +29,7 @@ int main(int argc, char **argv) {
     }
     FILE *inpf = getFileContent(argv[1]);
     buildFileContent(inpf);
+    firstIteration();
 
 //    rewind(inpf);
 //    do {
