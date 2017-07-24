@@ -10,19 +10,19 @@ void parseLine(FileLine *fileLine) {
     char lineContent[MAX_LINE];
     strcpy(lineContent, fileLine->lineContent);
     char *word = strtok(lineContent, " \t");
-    char *operands;
-    char *op1;
-    char *op2;
+    char *operands, *op1, *op2;
     char comma[] = " ,\t";
     int wordSize = strlen(word);
 
     if (word[wordSize - 1] == ':') { /* line begins with label */
         strcpy(fileLine->label, word);
         word = strtok(NULL, " \t");
-        if (word != NULL) {
+    }
+
+    if (word != NULL) {
             strcpy(fileLine->command, word);
             operands = strtok(NULL, " \t");
-            if(word[0] == '.') { /* command is .data/.string/.mat */
+            if(word[0] == '.') { /* directive is .data/.string/.mat */
                 strcpy(fileLine->op1, operands);
                 if (strcmp(word, ".mat") == 0) { /* fetch the matrix values */
                     op2 = strtok(NULL, " \t");
@@ -41,18 +41,7 @@ void parseLine(FileLine *fileLine) {
             }
         }
 
-    } else { /* command with no label in line (e.g. .entry/.extern) */
-        strncpy(fileLine->command, word, wordSize);
-        operands = strtok(NULL, " \t");
-        op1 = strtok(operands, comma);
-        if (op1 != NULL) {
-            strcpy(fileLine->op1, op1);
-        }
-        op2 = strtok(NULL, comma);
-        if (op2 != NULL) {
-            strcpy(fileLine->op2, op2);
-        }
-    }
+
 
     LOG_TRACE(LOG_DEBUG,
               "[DEBUG] line content: %s,\n\tlabel: %s,\n\tcommand: %s,\n\top1: %s,\n\top2: %s\n",
