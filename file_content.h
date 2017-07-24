@@ -1,21 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_LINE 80
+#define MAX_LINE 81
 #define NEWLINE '\n'
 #define COMMA ','
-
+#define CurFileLine fileLine[fileContent->noOfLines-1]
 typedef struct {
     char lineContent[MAX_LINE];
     char label[MAX_LINE];
     char command[MAX_LINE];
     char op1[MAX_LINE];
     char op2[MAX_LINE];
-    int lineNo;
+    int lineNum;
 } FileLine;
 
 typedef struct {
-    FileLine *lines;
+    FileLine *fileLine;
     int noOfLines;
 } FileContent;
 

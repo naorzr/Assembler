@@ -13,12 +13,11 @@ void parseLine(FileLine *fileLine) {
     char *operands;
     char *op1;
     char *op2;
-    char comma[4] = " ,\t";
-    int wordSize = (int) strlen(word);
+    char comma[] = " ,\t";
+    int wordSize = strlen(word);
 
     if (word[wordSize - 1] == ':') { /* line begins with label */
-        strncpy(fileLine->label, word, wordSize);
-        fileLine->label[wordSize - 1] = (char) 0;
+        strcpy(fileLine->label, word);
         word = strtok(NULL, " \t");
         if (word != NULL) {
             strcpy(fileLine->command, word);
@@ -62,21 +61,19 @@ void parseLine(FileLine *fileLine) {
 
 }
 
-FileContent *initFileContent() {
-    FileContent *fileContent = (FileContent *) malloc(sizeof(FileContent));
+/* initFileContent: allocate memory for a new fileContent structure and initialize all values to Null */
+FileContent *initFileContent(void) {
+    FileContent *fileContent = (FileContent *) calloc(1,sizeof(FileContent));
     if (!fileContent) {
         LOG_TRACE(LOG_ERROR, "Failed to allocate memory for the FileContent structure");
         return NULL;
     }
-    memset(fileContent, 0, sizeof(FileContent));
-    FileLine * line = (FileLine *) malloc(sizeof(FileLine));
-
+    FileLine * line = (FileLine *) calloc(1,sizeof(FileLine));
     if (!line) {
         LOG_TRACE(LOG_ERROR, "Failed to allocate memory for the FileLine structure");
         return NULL;
     }
-    memset(line, 0, sizeof(FileLine));
-    fileContent->lines = line;
+    fileContent->fileLine = line;
 
     return fileContent;
 }
@@ -99,19 +96,20 @@ void printFileContent(FileContent *fileContent) {
 
         LOG_TRACE(LOG_INFO,
                   "[INFO] line content: %s,\n\tline number: %d,\n\tlabel: %s,\n\tcommand: %s,\n\top1: %s,\n\top2: %s\n",
-                  fileContent->lines[i].lineContent, fileContent->lines[i].lineNo, fileContent->lines[i].label, fileContent->lines[i].command,
-                  fileContent->lines[i].op1, fileContent->lines[i].op2);
+                  fileContent->fileLine[i].lineContent, fileContent->fileLine[i].lineNum, fileContent->fileLine[i].label, fileContent->fileLine[i].command,
+                  fileContent->fileLine[i].op1, fileContent->fileLine[i].op2);
     }
     LOG_TRACE(LOG_DEBUG,"[INFO] END - printFileContent\n");
 }
 
-
+/* parse all the data in the input file into the fileContent structure */
 void buildFileContent(FILE *inpf) {
+    int lineNumber = 0;
+
     fileContent = initFileContent();
     if (!fileContent)
-        exit(0);
+        exit(EXIT_FAILURE);
 
-    int lineNumber = 0;
     char lineContent[MAX_LINE];
     while (fgets(lineContent, sizeof(lineContent), inpf) != NULL) {
         lineNumber++;
@@ -122,26 +120,26 @@ void buildFileContent(FILE *inpf) {
         fileContent->noOfLines++;
 
         if (fileContent->noOfLines >= 1) {
-            (*fileContent).lines = (FileLine *) realloc((*fileContent).lines,
+            fileContent->fileLine = (FileLine *) realloc(fileContent->fileLine,
                                                         sizeof(FileLine) * (fileContent->noOfLines));
-            FileLine *line = (FileLine *) malloc((sizeof(FileLine)));
-            if (!(*fileContent).lines || !line) {
+            FileLine *line = (FileLine *) calloc(1,(sizeof(FileLine)));
+
+            if (!fileContent->fileLine || !line) {
                 LOG_TRACE(LOG_ERROR, "Failed to allocate memory for the FileLine structure");
-                exit(0);
+                exit(EXIT_FAILURE);
             }
 
-            memset(line, 0, sizeof(FileLine));
-            fileContent->lines[fileContent->noOfLines-1] = *line;
+            fileContent->CurFileLine = *line;
         }
 
 
-        strcpy(fileContent->lines[fileContent->noOfLines-1].lineContent, lineContent);
-        int lineSize = (int) strlen(lineContent);
-        if (fileContent->lines[fileContent->noOfLines-1].lineContent[lineSize - 1] == '\n')
-            fileContent->lines[fileContent->noOfLines-1].lineContent[lineSize - 1] = (char) 0;
-        fileContent->lines[fileContent->noOfLines-1].lineNo = lineNumber;
+        strcpy(fileContent->CurFileLine.lineContent, lineContent);
+        int lineSize = strlen(lineContent);
+        if (fileContent->CurFileLine.lineContent[lineSize - 1] == '\n')
+            fileContent->CurFileLine.lineContent[lineSize - 1] = '\0';
+        fileContent->CurFileLine.lineNum = lineNumber;
 
-        parseLine(&(fileContent->lines[fileContent->noOfLines-1]));
+        parseLine(&(fileContent->CurFileLine));
     }
     printFileContent(fileContent);
 

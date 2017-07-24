@@ -9,7 +9,7 @@ void firstIteration() {
     dc = 0;
 
     for (i=0; i < fileContent->noOfLines; i++) { /* For every line in file */
-        FileLine line = fileContent->lines[i];
+        FileLine line = fileContent->fileLine[i];
         int hasLabel = 0;
         int dataSize = 0;
 
