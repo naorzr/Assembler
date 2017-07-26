@@ -1,6 +1,13 @@
 #include <string.h>
-#include "file_content.h"
-#include "logger.h"
+#ifndef ENDPROJECT_FILE_CONTENT_H
+    #include "file_content.h"
+#endif
+#ifndef ENDPROJECT_LOGGER_H
+    #include "logger.h"
+#endif
+#ifndef ENDPROJECT_CONTENT_VALIDATION_H
+    #include "content_validation.h"
+#endif
 
 /**
  * Parse a single line into the file content structure (extract labels and commands and operands)
@@ -16,6 +23,8 @@ void parseLine(FileLine *fileLine) {
 
     if (word[wordSize - 1] == ':') { /* line begins with label */
         strcpy(fileLine->label, word);
+        if(!validLabel(fileLine))
+            printerr(fileLine,fileLine->label);
         word = strtok(NULL, " \t");
     }
 

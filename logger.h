@@ -1,3 +1,9 @@
+
+#ifndef ENDPROJECT_LOGGER_H
+#define ENDPROJECT_LOGGER_H
+
+#endif //ENDPROJECT_LOGGER_H
+
 typedef enum
 {
     LOG_ERROR,

@@ -8,5 +8,5 @@ set(SOURCE_FILES
         main.c
         logger.c
         file_content.c
-        assembler.c)
+        assembler.c content_validation.c content_validation.h)
 add_executable(EndProject ${SOURCE_FILES})

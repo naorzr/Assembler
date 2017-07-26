@@ -22,6 +22,7 @@ char *getword(FILE *inpf) {
 }
 
 int main(int argc, char **argv) {
+
     char *str;
     if (argc < 2) {
         LOG_TRACE(LOG_ERROR, "No Files Were Passed\n");

@@ -1,3 +1,10 @@
+
+#ifndef ENDPROJECT_ASSEMBLER_H
+#define ENDPROJECT_ASSEMBLER_H
+
+#endif //ENDPROJECT_ASSEMBLER_H
+
+
 #define MEMORY_STARTING_ADDRESS 100
 #define DATA ".data"
 #define MAT ".mat"
