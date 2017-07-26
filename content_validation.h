@@ -13,6 +13,8 @@
 
 enum {FALSE,TRUE};
 
-void printerr(FileLine *fileLine,char *str);
+void printerr(char *lineContent,char *str,int lineNumber);
 
 int validLabel(FileLine *fileLine);
+
+int isDsm(char *word);

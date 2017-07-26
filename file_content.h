@@ -6,25 +6,12 @@
 #define ENDPROJECT_FILE_CONTENT_H
 
 #endif //ENDPROJECT_FILE_CONTENT_H
-
+enum{OFF,ON};
+enum{NOT_AVILABLE = -1, NONE,EXTERN,ENTRY,NO, YES};
 
 #define MAX_LINE 81
 #define NEWLINE '\n'
 #define COMMA ','
-#define CurFileLine fileLine[fileContent->noOfLines-1]
-typedef struct {
-    char lineContent[MAX_LINE];
-    char label[MAX_LINE];
-    char command[MAX_LINE];
-    char op1[MAX_LINE];
-    char op2[MAX_LINE];
-    int lineNum;
-} FileLine;
-
-typedef struct {
-    FileLine *fileLine;
-    int noOfLines;
-} FileContent;
 
 
 FILE *getFileContent(char *);
@@ -33,7 +20,7 @@ void buildFileContent(FILE *);
 
 FileContent *initFileContent();
 
-void parseLine(FileLine *);
+void parseLine(char *str,int lineNum);
 
 void printFileContent(FileContent *fileContent);
 

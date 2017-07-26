@@ -13,9 +13,9 @@
 #endif
 
 
-void printerr(FileLine *fileLine,char *str){
+void printerr(char *lineContent,char *str,int lineNum){
 
-    fprintf(stderr,"Error has occurred at line %d, Please examine:\n%s\n",fileLine->lineNum,str);
+    fprintf(stderr,"Error has occurred at line %d, Please examine:\n%s\n",lineNum,str);
 
 }
 
@@ -27,4 +27,11 @@ int validLabel(FileLine *fileLine){
         if(!isalnum(fileLine->label[i]))
             return FALSE;
 
+}
+
+int isDsm(char *word){
+    if((strcmp(word,".data")|strcmp(word,".string")|strcmp(word,".mat")) == 0)
+        return TRUE;
+
+    return FALSE;
 }
