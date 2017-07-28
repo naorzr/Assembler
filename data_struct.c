@@ -28,7 +28,7 @@ static int ic = 0;
 
 int isastring(char *str){
     unsigned len = (unsigned) strlen(str);
-    if(str<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
+    if(len<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
         return FALSE;
 
     if(str[0] == '\"' && str[len-1] == '\"')
@@ -79,7 +79,7 @@ unsigned numOfMemWords(char *operand){
 
 }
 
-/* TODO needs to finish this function *?
+/* TODO needs to finish this function */
 void updateDc(char *directive,char *op2){
     /*
     if(data_counter == NULL){
