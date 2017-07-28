@@ -11,6 +11,7 @@
 
 #endif //ENDPROJECT_DATA_STRUCT_H
 #define NUM_OF_CMDS 16
+#define MAX_OPERANDS 40
 
 
 enum{OFF,ON};
@@ -24,6 +25,10 @@ typedef struct symbolTable{
     struct symbolTable *next;
 }symbolTable;
 
+typedef struct dataCounter{
+    unsigned memWord: 10;
+}dataCounter;
+
 struct COMMAND{
     char *cmd;
     int code;
@@ -34,9 +39,11 @@ symbolTable *symlloc(void);
 
 void updateSymbolTable(char *label,int address,int storageType,int iscmd);
 
-void updateDc(char *op1,char *op2);
+void updateDc(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
+
+unsigned numOfMemWords(char *operand);
 
 int getDc();
 

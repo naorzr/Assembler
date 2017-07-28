@@ -58,13 +58,11 @@ void parseLine(char *lineContent,int lineNum) {
                         word = strtok(NULL,comma);
 
                     /* get operands */
-                    if(word)
+                    while(word) {
                         strcpy(op1, word);
-                    word = strtok(NULL,comma);
-                    if(word)
-                        strcpy(op2,word);
-
-                    updateDc(op1,op2);
+                        updateDc(directive,op1);
+                        word = strtok(NULL, comma);
+                    }
                 }
                 else if(word[0] == '.' && IS_EXTERNAL(&word[1])){   /* case it's .extern/.entry directive */
                     strcpy(directive, word);
