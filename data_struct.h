@@ -3,27 +3,28 @@
 //
 
 #include <stdlib.h>
-
+#ifndef ENDPROJECT_FILE_CONTENT_H
+#include "file_content.h"
+#endif
 #ifndef ENDPROJECT_DATA_STRUCT_H
 #define ENDPROJECT_DATA_STRUCT_H
 
 #endif //ENDPROJECT_DATA_STRUCT_H
-
+#define NUM_OF_CMDS 16
 
 typedef struct symbolTable{
-    char *label;
+    char label[MAX_LINE];
     int address;
     int storageType;
     int iscmd;
     struct symbolTable *next;
 }symbolTable;
 
-const struct{
+struct COMMAND{
     char *cmd;
     int code;
-}COMMANDS[] = {{"mov",0},{"cmp",1},{"add",2},{"sub",3},{"not",4},{"clr",5},
-        {"lea",6},{"inc",7},{"dec",8},{"jmp",9},{"bne",10},{"red",11},
-        {"prn",12},{"jsr",13},{"rts",14},{"stop",15},{"NULL",-1}};
+};
+
 
 symbolTable *symlloc(void);
 

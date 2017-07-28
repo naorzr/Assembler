@@ -22,21 +22,17 @@
  * @param fileLine
  */
 void parseLine(char *lineContent,int lineNum) {
-
-    char *word = strtok(lineContent, " \t");
-    char *operands;
+    int dc,ic;
+    char *word,operands;
     char comma[] = " ,\t";
-    char label[MAX_LINE];
-    char command[MAX_LINE];
-    char directive[MAX_LINE];
-    char op1[MAX_LINE];
-    char op2[MAX_LINE];
-    int wordSize = strlen(word);
-    int dc = getDc(), ic = getIc();
+    char label[MAX_LINE] = "",command[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
+    unsigned wordSize = (unsigned int)strlen(word);
+    dc = getDc(), ic = getIc();
+    word = strtok(lineContent, " \t");
     struct {
         unsigned label: 2;
         unsigned dsm: 2;        /* data/string/mat */
-    }flags;
+    }flags = {0,0};
 
     if (word[wordSize - 1] == ':') { /* line begins with label */
         flags.label = ON;
@@ -69,6 +65,10 @@ void parseLine(char *lineContent,int lineNum) {
                 }
                 else if(IS_EXTERNAL(word)){   /* case it's .extern/.entry directive */
                     strcpy(directive, word);
+
+                    /* TODO check for erros for word = strtok */
+                    word = strtok(NULL," \t");
+                    strcpy(label,word);
                     if(equals(directive,".extern"))
                         updateSymbolTable(label,NOT_AVILABLE,EXTERN,NO);
                     else
@@ -76,7 +76,7 @@ void parseLine(char *lineContent,int lineNum) {
                 }
                 else if(isCmd(word)) { /* normal command after label*/
 
-                word = strtok(operands, comma);
+                word = strtok(NULL, comma);
                 if (word)
                     strcpy(op1, word);
                 word = strtok(NULL, comma);

@@ -42,6 +42,7 @@ int isDsm(char *word){
 
 int isCmd(char *word){
     int i = 0;
+    extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     while(strcmp(COMMANDS[i].cmd,"NULL") != 0){
         if(strcmp(COMMANDS[i].cmd,word) == 0)
             return TRUE;
