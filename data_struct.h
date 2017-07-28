@@ -12,6 +12,10 @@
 #endif //ENDPROJECT_DATA_STRUCT_H
 #define NUM_OF_CMDS 16
 
+
+enum{OFF,ON};
+enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES};
+
 typedef struct symbolTable{
     char label[MAX_LINE];
     int address;

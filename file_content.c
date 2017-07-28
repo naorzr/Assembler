@@ -23,12 +23,15 @@
  */
 void parseLine(char *lineContent,int lineNum) {
     int dc,ic;
+    char *lineContent2[MAX_LINE];
     char *word,operands;
     char comma[] = " ,\t";
-    char label[MAX_LINE] = "",command[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
-    unsigned wordSize = (unsigned int)strlen(word);
-    dc = getDc(), ic = getIc();
+    unsigned wordSize;
+    char label[MAX_LINE] = "",cmd[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
+    strcpy(lineContent2,lineContent);
     word = strtok(lineContent, " \t");
+    wordSize = (unsigned int)strlen(word);
+    dc = getDc(), ic = getIc();
     struct {
         unsigned label: 2;
         unsigned dsm: 2;        /* data/string/mat */
@@ -45,9 +48,9 @@ void parseLine(char *lineContent,int lineNum) {
     if (word != NULL) {
 //                TODO there might be more than two operands for a directive, therefor an array of operands(maxed to 40) should be created
 //                TODO and filled using a while loop
-                if(isDsm(word)){    /* case it's a .data/.string/.mat directive */
+                if(word[0] == '.' && isDsm(&word[1])){    /* case it's a .data/.string/.mat directive */
                     strcpy(directive, word);
-                    if(flags.label) updateSymbolTable(label,dc,NONE,NO);
+                    if(flags.label) updateSymbolTable(label,dc,DSM,NOT_CMD);
 
                     if (equals(directive, ".mat"))  /* fetch the matrix values */
                         word = strtok(NULL, " \t");
@@ -63,19 +66,19 @@ void parseLine(char *lineContent,int lineNum) {
 
                     updateDc(op1,op2);
                 }
-                else if(IS_EXTERNAL(word)){   /* case it's .extern/.entry directive */
+                else if(word[0] == '.' && IS_EXTERNAL(&word[1])){   /* case it's .extern/.entry directive */
                     strcpy(directive, word);
 
                     /* TODO check for erros for word = strtok */
                     word = strtok(NULL," \t");
                     strcpy(label,word);
                     if(equals(directive,".extern"))
-                        updateSymbolTable(label,NOT_AVILABLE,EXTERN,NO);
+                        updateSymbolTable(label,EXTERNAL_ADDRESS,EXTERN,NOT_CMD);
                     else
-                        updateSymbolTable(label,NOT_AVILABLE,ENTRY,NO);
+                        updateSymbolTable(label,EXTERNAL_ADDRESS,ENTRY,NOT_CMD);
                 }
                 else if(isCmd(word)) { /* normal command after label*/
-
+                strcpy(cmd,word);
                 word = strtok(NULL, comma);
                 if (word)
                     strcpy(op1, word);
@@ -92,8 +95,8 @@ void parseLine(char *lineContent,int lineNum) {
 
 
     LOG_TRACE(LOG_DEBUG,
-              "[DEBUG] line content: %s,\n\tlabel: %s,\n\tcommand: %s,\n\top1: %s,\n\top2: %s\n",
-              lineContent, label, command,
+              "[DEBUG] line content: %s,\n\tlabel: %s,\n\tcommand: %s,\n\tdirective: %s\n\top1: %s,\n\top2: %s\n",
+              lineContent2, label, cmd, directive,
               op1, op2);
 
 }
@@ -105,7 +108,7 @@ void buildFileContent(FILE *inpf) {
     int lineNumber = 0;
 
     char lineContent[MAX_LINE];
-    while (fgets(lineContent, sizeof(lineContent), inpf) != NULL) {
+    while (fgets(lineContent, MAX_LINE, inpf) != NULL) {
         lineNumber++;
         /* if line is comment or empty - skip */
         if (lineContent[0] == ';' || lineContent[0] == '\n') {

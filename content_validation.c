@@ -25,7 +25,7 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 int validLabel(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || isDsm(strcat(".",label)) || IS_EXTERNAL(strcat(".",label)) || isCmd(strcat(".",label)))
+    if((slen = strlen(label)) > 30 || isDsm(label) || IS_EXTERNAL(label) || isCmd(label))
         return FALSE;
     for(i = 0; i < slen-1 ;i++)
         if(!isalnum(label[i]))
@@ -34,7 +34,7 @@ int validLabel(char *label){
 }
 
 int isDsm(char *word){
-    if((strcmp(word,".data")|strcmp(word,".string")|strcmp(word,".mat")) == 0)
+    if(strcmp(word,"data") == 0 || strcmp(word,"string") == 0 || strcmp(word,"mat") == 0)
         return TRUE;
 
     return FALSE;
@@ -43,9 +43,9 @@ int isDsm(char *word){
 int isCmd(char *word){
     int i = 0;
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
-    while(strcmp(COMMANDS[i].cmd,"NULL") != 0){
+    for(i = 0;i<NUM_OF_CMDS;i++)
         if(strcmp(COMMANDS[i].cmd,word) == 0)
             return TRUE;
-    }
+
     return FALSE;
 }

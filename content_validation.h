@@ -8,7 +8,7 @@
 
 enum {FALSE,TRUE};
 
-#define IS_EXTERNAL(label) !strcmp((label),".extern") || !strcmp((label),".entry")
+#define IS_EXTERNAL(label) !strcmp((label),"extern") || !strcmp((label),"entry")
 void printerr(char *lineContent,char *str,int lineNumber);
 
 int validLabel(char *label);

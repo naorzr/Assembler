@@ -1,4 +1,4 @@
-; file ps.as
+  ; file ps.as
 .entry LOOP
 .entry LENGTH
 .extern L3
