@@ -14,14 +14,6 @@ enum{NOT_AVILABLE = -1, NONE,EXTERN,ENTRY,NO, YES};
 #define COMMA ','
 
 
-FILE *getFileContent(char *);
-
 void buildFileContent(FILE *);
 
-FileContent *initFileContent();
-
 void parseLine(char *str,int lineNum);
-
-void printFileContent(FileContent *fileContent);
-
-FileContent *fileContent;

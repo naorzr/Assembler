@@ -1,7 +1,13 @@
 #include <ctype.h>
-#include "logger.h"
-#include "file_content.h"
-#include "assembler.h"
+#ifndef ENDPROJECT_LOGGER_H
+    #include "logger.h"
+#endif
+#ifndef ENDPROJECT_FILE_CONTENT_H
+    #include "file_content.h"
+#endif
+#ifndef ENDPROJECT_ASSEMBLER_H
+    #include "assembler.h"
+#endif
 
 
 char *getword(FILE *inpf) {
@@ -28,9 +34,8 @@ int main(int argc, char **argv) {
         LOG_TRACE(LOG_ERROR, "No Files Were Passed\n");
         return 1;
     }
-    FILE *inpf = getFileContent(argv[1]);
+    FILE *inpf = fopen(argv[1],"r");
     buildFileContent(inpf);
-    firstIteration();
 
 //    rewind(inpf);
 //    do {

@@ -6,15 +6,13 @@
 
 #endif //ENDPROJECT_CONTENT_VALIDATION_H
 
-
-#ifndef ENDPROJECT_FILE_CONTENT_H
-#include "file_content.h"
-#endif
-
 enum {FALSE,TRUE};
 
+#define IS_EXTERNAL(label) !strcmp((label),".extern") || !strcmp((label),".entry")
 void printerr(char *lineContent,char *str,int lineNumber);
 
-int validLabel(FileLine *fileLine);
+int validLabel(char *label);
 
 int isDsm(char *word);
+
+int isCmd(char *word);
