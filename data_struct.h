@@ -10,12 +10,14 @@
 #define ENDPROJECT_DATA_STRUCT_H
 
 #endif //ENDPROJECT_DATA_STRUCT_H
+
+#define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
 #define MAX_OPERANDS 40
 
 
 enum{OFF,ON};
-enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES};
+enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE};
 
 typedef struct symbolTable{
     char label[MAX_LINE];
@@ -43,7 +45,7 @@ void updateDc(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
 
-unsigned numOfMemWords(char *operand);
+unsigned numOfMemWords(char *operand,int state);
 
 int getDc();
 

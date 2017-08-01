@@ -20,30 +20,16 @@ const struct COMMAND const COMMANDS[] = {{"mov",0},{"cmp",1},{"add",2},{"sub",3}
                                          {"lea",6},{"inc",7},{"dec",8},{"jmp",9},{"bne",10},{"red",11},
                                          {"prn",12},{"jsr",13},{"rts",14},{"stop",15}};
 
+const char * const REGISTERS[NUM_OF_REG] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
+
+
 static symbolTable *tail = NULL, *head = NULL;
 static dataCounter *data_counter = NULL;
 
 static int dc = 0;
 static int ic = 0;
 
-int isastring(char *str){
-    unsigned len = (unsigned) strlen(str);
-    if(len<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
-        return FALSE;
 
-    if(str[0] == '\"' && str[len-1] == '\"')
-        return TRUE;
-
-    return FALSE;
-}
-
-int isanum(char *str){
-    if(*str == '-' || *str == '+' || isdigit(*str))
-        while(*(++str) != '\0')
-            if(!isdigit(*str))
-                return FALSE;
-    return TRUE;
-}
 
 symbolTable *symlloc(void){
     symbolTable *ptr = (symbolTable *) malloc(sizeof(symbolTable));
@@ -67,8 +53,8 @@ void updateSymbolTable(char *label,int address,int storageType,int iscmd){
 
 /* TODO finish this function */
 /* numOfMemWords: takes the operand string and returns the number of words needed for it be stored */
-unsigned numOfMemWords(char *operand){
-    if(isanum(operand))
+unsigned numOfMemWords(char *operand,int state){
+    if(isanum(operand)||isamat(operand))
         return 1;
 
     if(isastring(operand))
