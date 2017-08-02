@@ -54,12 +54,13 @@ void updateSymbolTable(char *label,int address,int storageType,int iscmd){
 /* TODO finish this function */
 /* numOfMemWords: takes the operand string and returns the number of words needed for it be stored */
 unsigned numOfMemWords(char *operand,int state){
-    if(isanum(operand)||isamat(operand))
+    if(isNum(operand) || isValidMat(operand) || isLabel(operand))
         return 1;
 
-    if(isastring(operand))
+    if(isString(operand))
         return (unsigned) strlen(operand) - 1;  /* 1 extra word for the terminating null and reducing 2 word numbers for the quotation */
 
+    
 
 
 

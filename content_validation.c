@@ -23,7 +23,7 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 }
 
-int validLabel(char *label){
+int isLabel(char *label){
     int i,slen;
     if((slen = strlen(label)) > 30 || isDsm(label) || IS_EXTERNAL(label) || isCmd(label))
         return FALSE;
@@ -51,7 +51,7 @@ int isCmd(char *word){
 }
 
 
-int isastring(char *str){
+int isString(char *str){
     unsigned len = (unsigned) strlen(str);
     if(len<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
         return FALSE;
@@ -63,7 +63,7 @@ int isastring(char *str){
 }
 
 
-int isanum(char *str){
+int isNum(char *str){
     if(*str == '-' || *str == '+' || isdigit(*str))
         while(*(++str) != '\0')
             if(!isdigit(*str))
@@ -81,22 +81,23 @@ int isareg(char *op){
     return FALSE;
 }
 
-int getmatarg(char *mat,char *arg1,char *arg2){
+int cpyMatVals(char *mat,char *arg1,char *arg2){
     char *op1,*op2;
-    while(isspace(*mat) && *mat != '\0')
-        mat++;
-    if(*(mat++) != '[')
+    SKIP_SPACE(mat)
+
+    if(valid_parentheses(mat) == FALSE)
         return FALSE;
 
     op1 = strtok(mat,"]");
-    if(op1 == FALSE)
+    if(op1 == NULL)
         return FALSE;
 
     op2 = strtok(NULL,"[");
-    if(op2 == NULL || op2[strlen(op2)-1] != ']' || strtok(NULL,"") != NULL)
+    if(op2 == NULL)
         return FALSE;
-    op2[strlen(op2)-1] = '\0';
 
+    SKIP_SPACE(op2)
+    op2[strlen(op2)-1] = '\0';
 
     strcpy(arg1,op1);
     strcpy(arg2,op2);
@@ -104,20 +105,44 @@ int getmatarg(char *mat,char *arg1,char *arg2){
     return TRUE;
 }
 
-
-int validmatvalue(char *val){
-    if(isanum(val) || isareg(val))
+int isValidMatVal(char *val){
+    if(isNum(val) || isareg(val))
         return TRUE;
     return FALSE;
 }
 
-/* *******not sure wether to use this function or not*********** */
-int isamat(char *str){
-    char matfmt[] = "[][]";
+int valid_parentheses(char *str){
+    char *left,*right;
     int i,k;
-    unsigned len;
-    len = strlen(str);
-    for(i = 0,k = 0;i < len, *(matfmt++) != '\0';i++){
+    unsigned len
+    SKIP_SPACE(str)
 
+    len = strlen(str);
+
+    if(*str != '[' || str[len-1] != ']')
+        return FALSE;
+
+    left = str;
+    while(++left < str + len){
+        if(*left == ']')
+            break;
     }
+    right = str + len -1;
+    while(--right > str){
+        if(*right == '[')
+            break;
+    }
+
+    if(right - left == 1)
+        return TRUE;
+
+    return FALSE;
+}
+
+int isValidMat(char *str){
+    char arg1[MAX_LINE], arg2[MAX_LINE];
+
+    if(cpyMatVals(str,arg1,arg2) == TRUE)
+         return isValidMatVal(arg1) && isValidMatVal(arg2);
+
 }
