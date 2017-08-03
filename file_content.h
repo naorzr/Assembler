@@ -10,7 +10,11 @@
 #define MAX_LINE 81
 #define NEWLINE '\n'
 #define COMMA ','
-#define SKIP_SPACE(str) {while(*str != '\0' && isspace(*str)) str++;}
+
+enum{FIRST_PASS, SECOND_PASS};
+#define Skip_Space(str)  \
+while(*(str) != '\0' && isspace(*(str)))\
+                (str)++;
 
 void buildFileContent(FILE *);
 

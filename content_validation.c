@@ -25,12 +25,13 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 int isLabel(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || isDsm(label) || IS_EXTERNAL(label) || isCmd(label))
+    if((slen = strlen(label)) > 30 || slen == 0 || exist_label(label) == TRUE || isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
         return FALSE;
+
+
     for(i = 0; i < slen-1 ;i++)
         if(!isalnum(label[i]))
             return FALSE;
-
 }
 
 int isDsm(char *word){
@@ -83,7 +84,7 @@ int isareg(char *op){
 
 int cpyMatVals(char *mat,char *arg1,char *arg2){
     char *op1,*op2;
-    SKIP_SPACE(mat)
+    Skip_Space(mat)
 
     if(valid_parentheses(mat) == FALSE)
         return FALSE;
@@ -96,7 +97,7 @@ int cpyMatVals(char *mat,char *arg1,char *arg2){
     if(op2 == NULL)
         return FALSE;
 
-    SKIP_SPACE(op2)
+    Skip_Space(op2)
     op2[strlen(op2)-1] = '\0';
 
     strcpy(arg1,op1);
@@ -114,8 +115,8 @@ int isValidMatVal(char *val){
 int valid_parentheses(char *str){
     char *left,*right;
     int i,k;
-    unsigned len
-    SKIP_SPACE(str)
+    unsigned len;
+    Skip_Space(str)
 
     len = strlen(str);
 
@@ -127,6 +128,7 @@ int valid_parentheses(char *str){
         if(*left == ']')
             break;
     }
+
     right = str + len -1;
     while(--right > str){
         if(*right == '[')
@@ -139,10 +141,34 @@ int valid_parentheses(char *str){
     return FALSE;
 }
 
-int isValidMat(char *str){
-    char arg1[MAX_LINE], arg2[MAX_LINE];
-
-    if(cpyMatVals(str,arg1,arg2) == TRUE)
-         return isValidMatVal(arg1) && isValidMatVal(arg2);
+char *getAddMode(char *op){
 
 }
+
+int isValidMat(char *str) {
+    char arg1[MAX_LINE], arg2[MAX_LINE];
+
+    if (cpyMatVals(str, arg1, arg2) == TRUE)
+        return isValidMatVal(arg1) && isValidMatVal(arg2);
+
+}
+
+int isValidAddressMode(char *cmd,char *src_op, char *dest_op){
+    extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
+    int i = 0;
+    char *addMode_srcop,*addMode_destop;
+
+    addMode_srcop = getAddMode(src_op);
+    addMode_destop = getAddMode(dest_op);
+
+    for(i = 0;i<NUM_OF_CMDS;i++){
+        if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
+            if (strstr(COMMANDS[i].addressingMode_op1, src_op) == NULL)
+                return E_INVALID_SRC_OP;
+            if(strstr(COMMANDS[i].addressingMode_op1,dest_op) == NULL)
+                return E_INVALID_DEST_OP;
+        }
+    }
+    return FALSE;
+}
+

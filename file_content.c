@@ -23,7 +23,7 @@
  */
 void parseLine(char *lineContent,int lineNum) {
     int dc,ic;
-    char *lineContent2[MAX_LINE];
+    char lineContent2[MAX_LINE];
     char *word,operands;
     char comma[] = " ,\t";
     unsigned wordSize;
@@ -31,6 +31,7 @@ void parseLine(char *lineContent,int lineNum) {
     strcpy(lineContent2,lineContent);
     word = strtok(lineContent, " \t");
     wordSize = (unsigned int)strlen(word);
+
     dc = getDc(), ic = getIc();
     struct {
         unsigned label: 2;
@@ -40,8 +41,8 @@ void parseLine(char *lineContent,int lineNum) {
     if (word[wordSize - 1] == ':') { /* line begins with label */
         flags.label = ON;
         strcpy(label,word);
-        //if(!validLabel(word))
-          //  printerr(fileLine,fileLine->label);
+        if(!isLabel(word))
+            printerr(lineContent,label,lineNum);
         word = strtok(NULL, " \t");
     }
 
@@ -64,7 +65,7 @@ void parseLine(char *lineContent,int lineNum) {
                         word = strtok(NULL, comma);
                     }
                 }
-                else if(word[0] == '.' && IS_EXTERNAL(&word[1])){   /* case it's .extern/.entry directive */
+                else if(word[0] == '.' && (Is_External(&word[1]) || Is_Entry(&label[1]))){   /* case it's .extern/.entry directive */
                     strcpy(directive, word);
 
                     /* TODO check for erros for word = strtok */
@@ -83,7 +84,7 @@ void parseLine(char *lineContent,int lineNum) {
                 word = strtok(NULL, comma);
                 if (word)
                     strcpy(op2, word);
-                updateIcCounter(op1,op2,&ic);
+
                 }
             } else {
                 printerr(lineContent,word,lineNum);

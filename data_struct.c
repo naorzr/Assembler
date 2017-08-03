@@ -15,15 +15,30 @@
 #include <stdio.h>
 #include <ctype.h>
 
+const struct COMMAND const COMMANDS[] = {
+                                         {"mov",0,"immediate/direct/matrix/direct_reg","direct/matrix/direct_reg"},
+                                         {"cmp",1,"immediate/direct/matrix/direct_reg","immediate/direct/matrix/direct_reg"},
+                                         {"add",2,"immediate/direct/matrix/direct_reg","direct/matrix/direct_reg"},
+                                         {"sub",3,"immediate/direct/matrix/direct_reg","direct/matrix/direct_reg"},
+                                         {"not",4,"null","direct/matrix/direct_reg"},
+                                         {"clr",5,"null","direct/matrix/direct_reg"},
+                                         {"lea",6,"direct/matrix","direct/matrix/direct_reg"},
+                                         {"inc",7,"null","direct/matrix/direct_reg"},
+                                         {"dec",8,"null","direct/matrix/direct_reg"},
+                                         {"jmp",9,"null","direct/matrix/direct_reg"},
+                                         {"bne",10,"null","direct/matrix/direct_reg"},
+                                         {"red",11,"null","direct/matrix/direct_reg"},
+                                         {"prn",12,"null","immediate/direct/matrix/direct_reg"},
+                                         {"jsr",13,"null","direct/matrix/direct_reg"},
+                                         {"rts",14,"null","null"},
+                                         {"stop",15,"null","null"}
+                                        };
 
-const struct COMMAND const COMMANDS[] = {{"mov",0},{"cmp",1},{"add",2},{"sub",3},{"not",4},{"clr",5},
-                                         {"lea",6},{"inc",7},{"dec",8},{"jmp",9},{"bne",10},{"red",11},
-                                         {"prn",12},{"jsr",13},{"rts",14},{"stop",15}};
 
 const char * const REGISTERS[NUM_OF_REG] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
 
 
-static symbolTable *tail = NULL, *head = NULL;
+static symbolTable *symbolTab_tail = NULL, *symbolTab_head = NULL;
 static dataCounter *data_counter = NULL;
 
 static int dc = 0;
@@ -40,14 +55,14 @@ symbolTable *symlloc(void){
 }
 
 void updateSymbolTable(char *label,int address,int storageType,int iscmd){
-    if(head == NULL)
-        head = tail = symlloc();
+    if(symbolTab_head == NULL)
+        symbolTab_head = symbolTab_tail = symlloc();
     else
-        tail = (tail->next = symlloc());
-    strcpy(tail->label,label);
-    tail->address = address;
-    tail->storageType = storageType;
-    tail->iscmd = iscmd;
+        symbolTab_tail = (symbolTab_tail->next = symlloc());
+    strcpy(symbolTab_tail->label,label);
+    symbolTab_tail->address = address;
+    symbolTab_tail->storageType = storageType;
+    symbolTab_tail->iscmd = iscmd;
 
 }
 
@@ -60,7 +75,7 @@ unsigned numOfMemWords(char *operand,int state){
     if(isString(operand))
         return (unsigned) strlen(operand) - 1;  /* 1 extra word for the terminating null and reducing 2 word numbers for the quotation */
 
-    
+
 
 
 
@@ -84,10 +99,30 @@ void updateIcCounter(char *op1,char *op2,int *ic){
 
 }
 
-int getIc(){
+void updateIc(char *op1,char *op2,int state){
+    if(state == FIRST_PASS && (isLabel(op1) || isLabel(op2)))
+    {
+        ic++;
+        return;
+    }
+
+
+
+
+}
+
+int getIc(void){
     return ic;
 }
 
-int getDc(){
+int getDc(void){
     return dc;
+}
+
+int exist_label(char *label){
+    symbolTable *ptr = symbolTab_head;
+    while(ptr)
+        if(strcmp(ptr++->label,label) == 0)
+            return TRUE;
+    return FALSE;
 }

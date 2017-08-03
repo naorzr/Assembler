@@ -14,7 +14,7 @@
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
 #define MAX_OPERANDS 40
-
+#define MAX_FILE_SIZE 256
 
 enum{OFF,ON};
 enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE};
@@ -31,10 +31,14 @@ typedef struct dataCounter{
     unsigned memWord: 10;
 }dataCounter;
 
-struct COMMAND{
+const struct COMMAND{
     char *cmd;
     int code;
+    const char *addressingMode_op1;
+    const char *addressingMode_op2;
 };
+
+
 
 
 symbolTable *symlloc(void);
@@ -45,9 +49,12 @@ void updateDc(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
 
+void updateIc(char *op1,char *op2,int state);
+
 unsigned numOfMemWords(char *operand,int state);
 
-int getDc();
+int getDc(void);
 
-int getIc();
+int getIc(void);
 
+int exist_label(char *label);

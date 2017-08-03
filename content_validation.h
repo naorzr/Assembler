@@ -8,7 +8,17 @@
 
 enum {FALSE = -1,TRUE = 1};
 
-#define IS_EXTERNAL(label) !strcmp((label),"extern") || !strcmp((label),"entry")
+#define Is_External(label) !strcmp((label),"extern")
+#define Is_Entry(label)     !strcmp((label),"entry")
+
+typedef enum err_t{
+    E_SUCCESS,
+    E_LABEL_REDEC,    /* label redeclaration */
+    E_INVALID_LABEL,
+    E_INVALID_SRC_OP,
+    E_INVALID_DEST_OP,
+
+}err_t;
 void printerr(char *lineContent,char *str,int lineNumber);
 
 int isLabel(char *label);
@@ -26,3 +36,5 @@ int isValidMatVal(char *val);
 int cpyMatVals(char *mat,char *arg1,char *arg2);
 
 int isValidMat(char *str);
+
+int isValidAddressMode(char *cmd,char *src_op, char *dest_op);
