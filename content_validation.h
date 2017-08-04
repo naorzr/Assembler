@@ -6,13 +6,13 @@
 
 #endif //ENDPROJECT_CONTENT_VALIDATION_H
 enum {OFF,ON};
-enum {FALSE = -1,TRUE = 1};
+enum {FALSE = 0,TRUE = 1};
 enum {
-    ADDMODE_NO_OPERAND = 0,
-    ADDMODE_IMMEDIATE = 1,
-    ADDMODE_DIRECT = 2,
-    ADDMODE_MATRIX = 3,
-    ADDMODE_REG = 4
+    ADDMODE_NO_OPERAND = -1,
+    ADDMODE_IMMEDIATE = 0,
+    ADDMODE_DIRECT = 1,
+    ADDMODE_MATRIX = 2,
+    ADDMODE_REG = 3,
     };
 #define Is_External(label) !strcmp((label),"extern")
 #define Is_Entry(label)     !strcmp((label),"entry")
@@ -46,5 +46,7 @@ int isValidMatVal(char *val);
 int cpyMatVals(char *mat,char *arg1,char *arg2);
 
 int isValidMat(char *str);
+
+int getAddMode(char *op);
 
 err_t isValidAddressMode(char *cmd,char *src_op, char *dest_op);

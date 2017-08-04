@@ -102,14 +102,27 @@ void updateIcCounter(char *op1,char *op2,int *ic){
 }
 
 err_t updateIc(char *cmd,char *op1,char *op2,int status){
+
     err_t state;
-    int word;
-    if(status == FIRST_PASS && (isLabel(op1) || isLabel(op2)))
-    {
-        ic++;
-    } else {
-        if((state = isValidAddressMode(cmd,op1,op2)) != E_SUCCESS)
-            return state;
+    int word, i;
+    if((state = isValidAddressMode(cmd,op1,op2)) != E_SUCCESS)
+        return state;
+
+    for(i = 0;i < NUM_OF_CMDS;i++){
+        if(strcmp(cmd,COMMANDS[i].cmd) == 0)
+            code[ic] = COMMANDS[i].code<<6;
+    }
+    /* TODO: */
+    code[ic] |= getAddMode(op1)<<4;
+    code[ic++] |= getAddMode(op2)<<2;
+
+        if(isLabel(op1)){
+            if(status == FIRST_PASS)
+                ic++;
+            else{
+
+            }
+        }
         if(isNum(op1))
         {
             word = atoi(op1);
@@ -123,24 +136,30 @@ err_t updateIc(char *cmd,char *op1,char *op2,int status){
                 word = ~((-1)*word) + 1;
             code[ic++] = word;
         }
-        else if(isReg(word)){
+        else if(isReg(op1)){
             word = atoi(&op1[1]);
             code[ic++] = word;
         }
-        else if(isValidMatVal(op1)){
-            char label[MAX_LINE];
+        else {
+            char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
             char *str;
+            int reg1,reg2;
             str = strchr(op1,'[');
             if(str != NULL){
-                strncpy(label,op1,str-op1-1);
-                if(isLabel(label) == FALSE || isValidMat(str) == FALSE)
+                strncpy(label,op1,str-op1);
+                if(!isLabel(label)|| !isValidMat(str))
                     return E_INVALID_SRC_OP;
                 ic++;       /* no label adress yet, progressing one step */
-
+                cpyMatVals(str,arg1,arg2);
+                reg1 = atoi(&arg1[1]);
+                reg2 = atoi(&arg2[1]);
+                code[ic] = reg1<<6;
+                code[ic] |= reg2<<6;
             }
+            return E_INVALID_SRC_OP;
         }
 
-        return E_INVALID_SRC_OP;
+        return E_SUCCESS;
 
     }
 
@@ -149,7 +168,7 @@ err_t updateIc(char *cmd,char *op1,char *op2,int status){
 
 
 
-}
+
 
 int getIc(void){
     return ic;

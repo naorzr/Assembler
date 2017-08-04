@@ -25,13 +25,14 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 int isLabel(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || slen == 0  || isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
+    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
         return FALSE;
-
 
     for(i = 0; i < slen-1 ;i++)
         if(!isalnum(label[i]))
             return FALSE;
+
+    return TRUE;
 }
 
 int isDsm(char *word){
@@ -65,18 +66,20 @@ int isString(char *str){
 
 
 int isNum(char *str){
-    if(*str == '-' || *str == '+' || isdigit(*str))
-        while(*(++str) != '\0')
-            if(!isdigit(*str))
+    if(*str == '-' || *str == '+' || isdigit(*str)) {
+        while (*(++str) != '\0')
+            if (!isdigit(*str))
                 return FALSE;
-    return TRUE;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 int isReg(char *op){
     extern const char * const REGISTERS[NUM_OF_REG];
     int i;
     for(i = 0;i < NUM_OF_REG;i++)
-        if(strcmp(op,REGISTERS[i]) == 0)
+        if(strcmp(REGISTERS[i],op) == 0)
             return TRUE;
 
     return FALSE;
@@ -84,12 +87,14 @@ int isReg(char *op){
 
 int cpyMatVals(char *mat,char *arg1,char *arg2){
     char *op1,*op2;
+    char temp_mat[MAX_LINE];
+    strcpy(temp_mat,mat);
     Skip_Space(mat)
 
-    if(valid_parentheses(mat) == FALSE)
+    if(valid_parentheses(temp_mat) == FALSE)
         return FALSE;
 
-    op1 = strtok(mat,"]");
+    op1 = strtok(temp_mat,"]");
     if(op1 == NULL)
         return FALSE;
 
@@ -100,7 +105,7 @@ int cpyMatVals(char *mat,char *arg1,char *arg2){
     Skip_Space(op2)
     op2[strlen(op2)-1] = '\0';
 
-    strcpy(arg1,op1);
+    strcpy(arg1,&op1[1]);
     strcpy(arg2,op2);
 
     return TRUE;
@@ -145,7 +150,10 @@ int isValidMat(char *str) {
     char arg1[MAX_LINE], arg2[MAX_LINE];
 
     if (cpyMatVals(str, arg1, arg2) == TRUE)
-        return isValidMatVal(arg1) && isValidMatVal(arg2);
+        return (isNum(arg1)||isReg(arg1)) &&
+                (isNum(arg2) || isReg(arg2));
+
+
 
 }
 
