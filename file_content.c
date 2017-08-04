@@ -84,7 +84,7 @@ void parseLine(char *lineContent,int lineNum) {
                 word = strtok(NULL, comma);
                 if (word)
                     strcpy(op2, word);
-
+                updateIc(cmd,op1,op2,FIRST_PASS);
                 }
             } else {
                 printerr(lineContent,word,lineNum);

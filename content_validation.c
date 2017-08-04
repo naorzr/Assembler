@@ -25,7 +25,7 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 int isLabel(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || slen == 0 || exist_label(label) == TRUE || isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
+    if((slen = strlen(label)) > 30 || slen == 0  || isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
         return FALSE;
 
 
@@ -72,7 +72,7 @@ int isNum(char *str){
     return TRUE;
 }
 
-int isareg(char *op){
+int isReg(char *op){
     extern const char * const REGISTERS[NUM_OF_REG];
     int i;
     for(i = 0;i < NUM_OF_REG;i++)
@@ -107,7 +107,7 @@ int cpyMatVals(char *mat,char *arg1,char *arg2){
 }
 
 int isValidMatVal(char *val){
-    if(isNum(val) || isareg(val))
+    if(isNum(val) || isReg(val))
         return TRUE;
     return FALSE;
 }
@@ -141,10 +141,6 @@ int valid_parentheses(char *str){
     return FALSE;
 }
 
-char *getAddMode(char *op){
-
-}
-
 int isValidMat(char *str) {
     char arg1[MAX_LINE], arg2[MAX_LINE];
 
@@ -153,20 +149,71 @@ int isValidMat(char *str) {
 
 }
 
-int isValidAddressMode(char *cmd,char *src_op, char *dest_op){
+
+int getAddMode(char *op){
+    if(op == NULL)
+        return ADDMODE_NO_OPERAND;
+    else if(op[0] == '#')
+        return ADDMODE_IMMEDIATE;
+    else if(isLabel(op) == TRUE)
+        return ADDMODE_DIRECT;
+    else if(isReg(op) == TRUE)
+        return ADDMODE_REG;
+    else
+        return ADDMODE_MATRIX;
+}
+
+
+err_t isValidAddressMode(char *cmd,char *src_op, char *dest_op){
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     int i = 0;
-    char *addMode_srcop,*addMode_destop;
+    int addMode_srcop,addMode_destop;
 
     addMode_srcop = getAddMode(src_op);
     addMode_destop = getAddMode(dest_op);
 
     for(i = 0;i<NUM_OF_CMDS;i++){
         if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
-            if (strstr(COMMANDS[i].addressingMode_op1, src_op) == NULL)
-                return E_INVALID_SRC_OP;
-            if(strstr(COMMANDS[i].addressingMode_op1,dest_op) == NULL)
-                return E_INVALID_DEST_OP;
+            switch(addMode_srcop){
+                case ADDMODE_DIRECT:
+                    if(COMMANDS[i].addressingMode_op1.direct == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    break;
+                case ADDMODE_IMMEDIATE:
+                    if(COMMANDS[i].addressingMode_op1.immediate == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    break;
+                case ADDMODE_MATRIX:
+                    if(COMMANDS[i].addressingMode_op1.matrix == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    break;
+                case ADDMODE_REG:
+                    if(COMMANDS[i].addressingMode_op1.reg == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    break;
+                case ADDMODE_NO_OPERAND:
+                    if(COMMANDS[i].addressingMode_op1.noOperand == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    break;
+                default:
+                    return E_INVALID_SRCOP_ADDMODE;
+            }
+
+            switch(addMode_destop){
+                case ADDMODE_DIRECT:
+                    if (COMMANDS[i].addressingMode_op2.direct == OFF) return E_INVALID_DESTOP_ADDMODE;
+                    break;
+                case ADDMODE_IMMEDIATE:
+                    if (COMMANDS[i].addressingMode_op2.immediate == OFF) return E_INVALID_DESTOP_ADDMODE;
+                    break;
+                case ADDMODE_MATRIX:
+                    if (COMMANDS[i].addressingMode_op2.matrix == OFF) return E_INVALID_DESTOP_ADDMODE;
+                    break;
+                case ADDMODE_REG:
+                    if (COMMANDS[i].addressingMode_op2.reg == OFF) return E_INVALID_DESTOP_ADDMODE;
+                    break;
+                case ADDMODE_NO_OPERAND:
+                    if (COMMANDS[i].addressingMode_op2.noOperand == OFF) return E_INVALID_DESTOP_ADDMODE;
+                    break;
+                default:
+                    return E_INVALID_DESTOP_ADDMODE;
+            }
+            return E_SUCCESS;
         }
     }
     return FALSE;

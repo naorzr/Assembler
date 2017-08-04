@@ -16,7 +16,6 @@
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 
-enum{OFF,ON};
 enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE};
 
 typedef struct symbolTable{
@@ -31,11 +30,23 @@ typedef struct dataCounter{
     unsigned memWord: 10;
 }dataCounter;
 
-const struct COMMAND{
+struct COMMAND{
     char *cmd;
     int code;
-    const char *addressingMode_op1;
-    const char *addressingMode_op2;
+    struct{
+     int noOperand: 2;
+     int immediate: 2;
+     int direct: 2;
+     int matrix: 2;
+     int reg: 2;
+    }addressingMode_op1;
+    struct{
+        int noOperand: 2;
+        int immediate: 2;
+        int direct: 2;
+        int matrix: 2;
+        int reg: 2;
+    } addressingMode_op2;
 };
 
 
@@ -49,7 +60,7 @@ void updateDc(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
 
-void updateIc(char *op1,char *op2,int state);
+err_t updateIc(char *cmd,char *op1,char *op2,int state);
 
 unsigned numOfMemWords(char *operand,int state);
 
