@@ -20,18 +20,18 @@ const struct COMMAND const COMMANDS[] = {
                                          {"cmp",1,{0,1,1,1,1},{0,1,1,1,1}},
                                          {"add",2,{0,1,1,1,1},{0,0,1,1,1}},
                                          {"sub",3,{0,1,1,1,1},{0,0,1,1,1}},
-                                         {"not",4,{0},{0,0,1,1,1}},
-                                         {"clr",5,{0},{0,0,1,1,1}},
+                                         {"not",4,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"clr",5,{1,0,0,0,0},{0,0,1,1,1}},
                                          {"lea",6,{0,0,1,1,0},{0,0,1,1,1}},
-                                         {"inc",7,{0},{0,0,1,1,1}},
-                                         {"dec",8,{0},{0,0,1,1,1}},
-                                         {"jmp",9,{0},{0,0,1,1,1}},
-                                         {"bne",10,{0},{0,0,1,1,1}},
-                                         {"red",11,{0},{0,0,1,1,1}},
-                                         {"prn",12,{0},{0,1,1,1,1}},
-                                         {"jsr",13,{0},{0,0,1,1,1}},
-                                         {"rts",14,{0},{0}},
-                                         {"stop",15,{0},{0}}
+                                         {"inc",7,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"dec",8,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"jmp",9,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"bne",10,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"red",11,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"prn",12,{1,0,0,0,0},{0,1,1,1,1}},
+                                         {"jsr",13,{1,0,0,0,0},{0,0,1,1,1}},
+                                         {"rts",14,{1,0,0,0,0},{1,0,0,0,0}},
+                                         {"stop",15,{1,0,0,0,0},{1,0,0,0,0}}
                                         };
 
 
@@ -44,8 +44,8 @@ static dataCounter *data_counter = NULL;
 static int dc = 0;
 static int ic = 0;
 
-static unsigned code[MAX_FILE_SIZE] = {0};
-static unsigned data[MAX_FILE_SIZE] = {0};
+static unsigned code[MAX_FILE_SIZE] = {1,0,0,0,0};
+static unsigned data[MAX_FILE_SIZE] = {1,0,0,0,0};
 
 
 symbolTable *symlloc(void){
@@ -101,11 +101,11 @@ void updateIcCounter(char *op1,char *op2,int *ic){
 
 }
 
-err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
+err_t updateIc(char *cmd,char *dest_op,char *src_op,int status){
 
     err_t state;
     int word, i;
-    if((state = isValidAddressMode(cmd,src_op,dest_op)) != E_SUCCESS)
+    if((state = isValidAddressMode(cmd,dest_op,src_op)) != E_SUCCESS)
         return state;
 
     for(i = 0;i < NUM_OF_CMDS;i++){
@@ -116,50 +116,6 @@ err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
     code[ic] |= getAddMode(src_op,VALUE)<<4;
     code[ic++] |= getAddMode(dest_op,VALUE)<<2;
 
-        if(isLabel(src_op)){
-            if(status == FIRST_PASS)
-                ic++;
-            else{
-
-            }
-        }
-        if(isNum(src_op))
-        {
-            word = atoi(src_op);
-            if(word < 0)
-                word = ~((-1)*word) + 1;
-            code[ic++] = word;
-        }
-        else if(src_op[0] == '#' && isNum(&src_op[1])){
-            word = atoi(&src_op[1]);
-            if(word < 0)
-                word = ~((-1)*word) + 1;
-            code[ic++] = word;
-        }
-        else if(isReg(src_op)){
-            word = atoi(&src_op[1]);
-            code[ic++] = word<<6;
-        }
-        else {
-            char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
-            char *str;
-            int reg1,reg2;
-            str = strchr(src_op,'[');
-            if(str != NULL){
-                strncpy(label,src_op,str-src_op);
-                if(!isLabel(label)|| !isValidMat(str))
-                    return E_INVALID_SRC_OP;
-                ic++;       /* no label adress yet, progressing one step */
-                cpyMatVals(str,arg1,arg2);
-                reg1 = atoi(&arg1[1]);
-                reg2 = atoi(&arg2[1]);
-                code[ic] |= reg1<<6;
-                code[ic++] |= reg2<<2;
-
-            }
-            else
-                return E_INVALID_SRC_OP;
-        }
 
     /* TODO: fix code duplication*/
 
@@ -208,7 +164,52 @@ err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
             return E_INVALID_DEST_OP;
     }
 
-        return E_SUCCESS;
+    if(isLabel(src_op)){
+        if(status == FIRST_PASS)
+            ic++;
+        else{
+
+        }
+    }
+    if(isNum(src_op))
+    {
+        word = atoi(src_op);
+        if(word < 0)
+            word = ~((-1)*word) + 1;
+        code[ic++] = word;
+    }
+    else if(src_op[0] == '#' && isNum(&src_op[1])){
+        word = atoi(&src_op[1]);
+        if(word < 0)
+            word = ~((-1)*word) + 1;
+        code[ic++] = word;
+    }
+    else if(isReg(src_op)){
+        word = atoi(&src_op[1]);
+        code[ic++] = word<<6;
+    }
+    else {
+        char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
+        char *str;
+        int reg1,reg2;
+        str = strchr(src_op,'[');
+        if(str != NULL){
+            strncpy(label,src_op,str-src_op);
+            if(!isLabel(label)|| !isValidMat(str))
+                return E_INVALID_SRC_OP;
+            ic++;       /* no label adress yet, progressing one step */
+            cpyMatVals(str,arg1,arg2);
+            reg1 = atoi(&arg1[1]);
+            reg2 = atoi(&arg2[1]);
+            code[ic] |= reg1<<6;
+            code[ic++] |= reg2<<2;
+
+        }
+        else
+            return E_INVALID_SRC_OP;
+    }
+
+    return E_SUCCESS;
 
     }
 

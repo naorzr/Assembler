@@ -18,7 +18,7 @@ enum {
 #define Is_Entry(label)     !strcmp((label),"entry")
 
 typedef enum err_t{
-    E_SUCCESS,
+    E_SUCCESS = 1,
     E_LABEL_REDEC,    /* label redeclaration */
     E_INVALID_LABEL,
     E_INVALID_SRC_OP,

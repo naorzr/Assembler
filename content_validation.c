@@ -172,7 +172,7 @@ int getAddMode(char *op,int lvl){
 }
 
 
-err_t isValidAddressMode(char *cmd,char *src_op, char *dest_op){
+err_t isValidAddressMode(char *cmd, char *dest_op,char *src_op){
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     int i = 0;
     int addMode_srcop,addMode_destop;
