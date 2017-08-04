@@ -44,8 +44,8 @@ static dataCounter *data_counter = NULL;
 static int dc = 0;
 static int ic = 0;
 
-static unsigned code[MAX_FILE_SIZE];
-static unsigned data[MAX_FILE_SIZE];
+static unsigned code[MAX_FILE_SIZE] = {0};
+static unsigned data[MAX_FILE_SIZE] = {0};
 
 
 symbolTable *symlloc(void){
@@ -101,63 +101,112 @@ void updateIcCounter(char *op1,char *op2,int *ic){
 
 }
 
-err_t updateIc(char *cmd,char *op1,char *op2,int status){
+err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
 
     err_t state;
     int word, i;
-    if((state = isValidAddressMode(cmd,op1,op2)) != E_SUCCESS)
+    if((state = isValidAddressMode(cmd,src_op,dest_op)) != E_SUCCESS)
         return state;
 
     for(i = 0;i < NUM_OF_CMDS;i++){
         if(strcmp(cmd,COMMANDS[i].cmd) == 0)
-            code[ic] = COMMANDS[i].code<<6;
+            code[ic] |= COMMANDS[i].code<<6;
     }
     /* TODO: */
-    code[ic] |= getAddMode(op1)<<4;
-    code[ic++] |= getAddMode(op2)<<2;
+    code[ic] |= getAddMode(src_op,VALUE)<<4;
+    code[ic++] |= getAddMode(dest_op,VALUE)<<2;
 
-        if(isLabel(op1)){
+        if(isLabel(src_op)){
             if(status == FIRST_PASS)
                 ic++;
             else{
 
             }
         }
-        if(isNum(op1))
+        if(isNum(src_op))
         {
-            word = atoi(op1);
+            word = atoi(src_op);
             if(word < 0)
                 word = ~((-1)*word) + 1;
             code[ic++] = word;
         }
-        else if(op1[0] == '#' && isNum(&op1[1])){
-            word = atoi(&op1[1]);
+        else if(src_op[0] == '#' && isNum(&src_op[1])){
+            word = atoi(&src_op[1]);
             if(word < 0)
                 word = ~((-1)*word) + 1;
             code[ic++] = word;
         }
-        else if(isReg(op1)){
-            word = atoi(&op1[1]);
-            code[ic++] = word;
+        else if(isReg(src_op)){
+            word = atoi(&src_op[1]);
+            code[ic++] = word<<6;
         }
         else {
             char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
             char *str;
             int reg1,reg2;
-            str = strchr(op1,'[');
+            str = strchr(src_op,'[');
             if(str != NULL){
-                strncpy(label,op1,str-op1);
+                strncpy(label,src_op,str-src_op);
                 if(!isLabel(label)|| !isValidMat(str))
                     return E_INVALID_SRC_OP;
                 ic++;       /* no label adress yet, progressing one step */
                 cpyMatVals(str,arg1,arg2);
                 reg1 = atoi(&arg1[1]);
                 reg2 = atoi(&arg2[1]);
-                code[ic] = reg1<<6;
-                code[ic] |= reg2<<6;
+                code[ic] |= reg1<<6;
+                code[ic++] |= reg2<<2;
+
             }
-            return E_INVALID_SRC_OP;
+            else
+                return E_INVALID_SRC_OP;
         }
+
+    /* TODO: fix code duplication*/
+
+    if(isLabel(dest_op)){
+        if(status == FIRST_PASS)
+            ic++;
+        else{
+
+        }
+    }
+    if(isNum(dest_op))
+    {
+        word = atoi(dest_op);
+        if(word < 0)
+            word = ~((-1)*word) + 1;
+        code[ic++] = word;
+    }
+    else if(dest_op[0] == '#' && isNum(&dest_op[1])){
+        word = atoi(&dest_op[1]);
+        if(word < 0)
+            word = ~((-1)*word) + 1;
+        code[ic++] = word;
+    }
+    else if(isReg(dest_op)){
+        word = atoi(&dest_op[1]);
+        code[ic++] = word;
+    }
+    else {
+        char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
+        char *str;
+        int reg1,reg2;
+        str = strchr(dest_op,'[');
+        if(str != NULL){
+            strncpy(label,dest_op,str-dest_op);
+            if(!isLabel(label)|| !isValidMat(str))
+                return E_INVALID_DEST_OP;
+            ic++;       /* no label adress yet, progressing one step */
+            cpyMatVals(str,arg1,arg2);
+            reg1 = atoi(&arg1[1]);
+            reg2 = atoi(&arg2[1]);
+            code[ic] |= reg1<<6;
+            code[ic++] |= reg2<<2;
+
+        }
+        else
+            return E_INVALID_DEST_OP;
+    }
 
         return E_SUCCESS;
 
@@ -184,4 +233,21 @@ int exist_label(char *label){
         if(strcmp(ptr++->label,label) == 0)
             return TRUE;
     return FALSE;
+}
+
+void printCodeBits(){
+    int i;
+    unsigned mask =  1;
+    printf("Code counter:\n");
+    for(i = 0;i<=ic;i++){
+        printf("\t%3d:",i);
+        for(mask = 1,mask <<= 9;mask;mask>>= 1) {
+            printf("%d", mask & code[i]? 1: 0);
+            if(mask == 64 || mask == 4)
+                printf("-");
+        }
+        printf("\n");
+
+    }
+    printf("\n");
 }

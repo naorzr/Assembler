@@ -3,20 +3,24 @@
 //
 
 #include <stdlib.h>
+#ifndef ENDPROJECT_DATA_STRUCT_H
+#define ENDPROJECT_DATA_STRUCT_H
+#endif //ENDPROJECT_DATA_STRUCT_H
+
+#ifndef ENDPROJECT_CONTENT_VALIDATION_H
+#include "content_validation.h"
+#endif
+
 #ifndef ENDPROJECT_FILE_CONTENT_H
 #include "file_content.h"
 #endif
-#ifndef ENDPROJECT_DATA_STRUCT_H
-#define ENDPROJECT_DATA_STRUCT_H
-
-#endif //ENDPROJECT_DATA_STRUCT_H
 
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 
-enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE};
+enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
 
 typedef struct symbolTable{
     char label[MAX_LINE];
@@ -69,3 +73,5 @@ int getDc(void);
 int getIc(void);
 
 int exist_label(char *label);
+
+void printCodeBits();

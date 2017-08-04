@@ -47,6 +47,6 @@ int cpyMatVals(char *mat,char *arg1,char *arg2);
 
 int isValidMat(char *str);
 
-int getAddMode(char *op);
+int getAddMode(char *op,int lvl);
 
 err_t isValidAddressMode(char *cmd,char *src_op, char *dest_op);

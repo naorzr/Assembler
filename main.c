@@ -9,6 +9,13 @@
     #include "assembler.h"
 #endif
 
+#ifndef ENDPROJECT_DATA_STRUCT_H
+    #include "data_struct.h"
+#endif
+
+#ifndef ENDPROJECT_CONTENT_VALIDATION_H
+#include "content_validation.h"
+#endif
 
 char *getword(FILE *inpf) {
     int ch, i = 0;
@@ -36,7 +43,7 @@ int main(int argc, char **argv) {
     }
     FILE *inpf = fopen(argv[1],"r");
     buildFileContent(inpf);
-
+    printCodeBits();        /* helper method, wont go into the actual code */
 //    rewind(inpf);
 //    do {
 //        str = getword(inpf);

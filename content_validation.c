@@ -25,7 +25,7 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 int isLabel(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label))
+    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label) || isReg(label))
         return FALSE;
 
     for(i = 0; i < slen-1 ;i++)
@@ -158,14 +158,14 @@ int isValidMat(char *str) {
 }
 
 
-int getAddMode(char *op){
-    if(op == NULL)
-        return ADDMODE_NO_OPERAND;
+int getAddMode(char *op,int lvl){
+    if(strcmp(op,"") == 0)
+        return lvl == ADD_MODE? ADDMODE_NO_OPERAND: 0;
     else if(op[0] == '#')
         return ADDMODE_IMMEDIATE;
-    else if(isLabel(op) == TRUE)
+    else if(isLabel(op))
         return ADDMODE_DIRECT;
-    else if(isReg(op) == TRUE)
+    else if(isReg(op))
         return ADDMODE_REG;
     else
         return ADDMODE_MATRIX;
@@ -177,8 +177,8 @@ err_t isValidAddressMode(char *cmd,char *src_op, char *dest_op){
     int i = 0;
     int addMode_srcop,addMode_destop;
 
-    addMode_srcop = getAddMode(src_op);
-    addMode_destop = getAddMode(dest_op);
+    addMode_srcop = getAddMode(src_op,ADD_MODE);
+    addMode_destop = getAddMode(dest_op,ADD_MODE);
 
     for(i = 0;i<NUM_OF_CMDS;i++){
         if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
