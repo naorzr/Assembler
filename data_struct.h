@@ -20,6 +20,7 @@
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 
+enum {SRC_OP,DEST_OP};
 enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
 
 typedef struct symbolTable{
@@ -64,7 +65,9 @@ void updateDc(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
 
+
 err_t updateIc(char *cmd,char *op1,char *op2,int state);
+
 
 unsigned numOfMemWords(char *operand,int state);
 
@@ -74,4 +77,4 @@ int getIc(void);
 
 int exist_label(char *label);
 
-void printCodeBits();
+void test(char *lvl,char *filename);

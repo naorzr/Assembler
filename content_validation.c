@@ -158,31 +158,34 @@ int isValidMat(char *str) {
 }
 
 
-int getAddMode(char *op,int lvl){
+int getAddMode(char *op){
     if(strcmp(op,"") == 0)
-        return lvl == ADD_MODE? ADDMODE_NO_OPERAND: 0;
+        return ADDMODE_NO_OPERAND;
     else if(op[0] == '#')
         return ADDMODE_IMMEDIATE;
     else if(isLabel(op))
         return ADDMODE_DIRECT;
     else if(isReg(op))
         return ADDMODE_REG;
-    else
+    else {
+        char arg1[MAX_LINE],arg2[MAX_LINE],label[MAX_LINE];
+        char *str;
+        str = strchr(op,'[');
+        strncpy(label,op,str-op);
+        if(!isLabel(label)|| !isValidMat(str))
+            return ADDMODE_INVALID;
         return ADDMODE_MATRIX;
+    }
 }
 
 
-err_t isValidAddressMode(char *cmd, char *dest_op,char *src_op){
+err_t isValidAddressMode(char *cmd, AddressMode src_op,AddressMode dest_op){
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     int i = 0;
-    int addMode_srcop,addMode_destop;
-
-    addMode_srcop = getAddMode(src_op,ADD_MODE);
-    addMode_destop = getAddMode(dest_op,ADD_MODE);
 
     for(i = 0;i<NUM_OF_CMDS;i++){
         if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
-            switch(addMode_srcop){
+            switch(src_op){
                 case ADDMODE_DIRECT:
                     if(COMMANDS[i].addressingMode_op1.direct == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
@@ -202,7 +205,7 @@ err_t isValidAddressMode(char *cmd, char *dest_op,char *src_op){
                     return E_INVALID_SRCOP_ADDMODE;
             }
 
-            switch(addMode_destop){
+            switch(dest_op){
                 case ADDMODE_DIRECT:
                     if (COMMANDS[i].addressingMode_op2.direct == OFF) return E_INVALID_DESTOP_ADDMODE;
                     break;

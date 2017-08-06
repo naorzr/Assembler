@@ -43,7 +43,8 @@ int main(int argc, char **argv) {
     }
     FILE *inpf = fopen(argv[1],"r");
     buildFileContent(inpf);
-    printCodeBits();        /* helper method, wont go into the actual code */
+    test("firstpass",argv[1]);      /* helper method, wont go into the actual code */
+
 //    rewind(inpf);
 //    do {
 //        str = getword(inpf);

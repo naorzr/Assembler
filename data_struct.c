@@ -44,8 +44,8 @@ static dataCounter *data_counter = NULL;
 static int dc = 0;
 static int ic = 0;
 
-static unsigned code[MAX_FILE_SIZE] = {1,0,0,0,0};
-static unsigned data[MAX_FILE_SIZE] = {1,0,0,0,0};
+static unsigned code[MAX_FILE_SIZE] = {0};
+static unsigned data[MAX_FILE_SIZE] = {0};
 
 
 symbolTable *symlloc(void){
@@ -101,120 +101,70 @@ void updateIcCounter(char *op1,char *op2,int *ic){
 
 }
 
-err_t updateIc(char *cmd,char *dest_op,char *src_op,int status){
 
+int strToBinWord(char *str,AddressMode mode,int op_type){
+    int word;
+    char arg1[MAX_LINE],arg2[MAX_LINE];
+
+    switch(mode){
+        case ADDMODE_IMMEDIATE:
+            word = atoi(&str[1]);
+            if(word < 0)
+                word = ~((-1)*word) + 1;
+            return word<<2;
+        case ADDMODE_DIRECT:
+            word = atoi(str);
+            if(word < 0)
+                word = ~((-1)*word) + 1;
+            return word<<2;
+        case ADDMODE_MATRIX:
+            str = strchr(str,'[');
+            ic++;       /* no label adress yet, progressing one step */
+            cpyMatVals(str,arg1,arg2);
+            return (atoi(&arg1[1])<<6) | atoi(&arg2[1])<<2;
+        case ADDMODE_REG:
+            word = atoi(&str[1]);
+            return word<<(op_type == SRC_OP?6:2);
+        case ADDMODE_NO_OPERAND:
+            return 0;
+        default:
+            return 0;
+    }
+
+}
+
+err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
     err_t state;
     int word, i;
-    if((state = isValidAddressMode(cmd,dest_op,src_op)) != E_SUCCESS)
+         /* will be the matrix argument if needed */
+    char *str;
+    AddressMode srcop_mode,destop_mode;
+
+    destop_mode = getAddMode(dest_op);
+    srcop_mode = getAddMode(src_op);
+
+    if((state = isValidAddressMode(cmd,srcop_mode,destop_mode)) != E_SUCCESS)
         return state;
 
     for(i = 0;i < NUM_OF_CMDS;i++){
-        if(strcmp(cmd,COMMANDS[i].cmd) == 0)
-            code[ic] |= COMMANDS[i].code<<6;
+        if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
+            code[ic] |= COMMANDS[i].code << 6;
+            break;
+        }
     }
+
     /* TODO: */
-    code[ic] |= getAddMode(src_op,VALUE)<<4;
-    code[ic++] |= getAddMode(dest_op,VALUE)<<2;
+    code[ic] |= srcop_mode == ADDMODE_NO_OPERAND?0:srcop_mode<<4;
+    code[ic] |= destop_mode == ADDMODE_NO_OPERAND?0:destop_mode<<2;
 
+    if(srcop_mode != ADDMODE_NO_OPERAND)
+        code[++ic] |= strToBinWord(src_op,srcop_mode,SRC_OP);
+    if(destop_mode != ADDMODE_NO_OPERAND)
+        code[srcop_mode == ADDMODE_REG && destop_mode == ADDMODE_REG?ic:++ic] |= strToBinWord(dest_op,destop_mode,DEST_OP);
 
-    /* TODO: fix code duplication*/
-
-    if(isLabel(dest_op)){
-        if(status == FIRST_PASS)
-            ic++;
-        else{
-
-        }
-    }
-    if(isNum(dest_op))
-    {
-        word = atoi(dest_op);
-        if(word < 0)
-            word = ~((-1)*word) + 1;
-        code[ic++] = word;
-    }
-    else if(dest_op[0] == '#' && isNum(&dest_op[1])){
-        word = atoi(&dest_op[1]);
-        if(word < 0)
-            word = ~((-1)*word) + 1;
-        code[ic++] = word;
-    }
-    else if(isReg(dest_op)){
-        word = atoi(&dest_op[1]);
-        code[ic++] = word;
-    }
-    else {
-        char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
-        char *str;
-        int reg1,reg2;
-        str = strchr(dest_op,'[');
-        if(str != NULL){
-            strncpy(label,dest_op,str-dest_op);
-            if(!isLabel(label)|| !isValidMat(str))
-                return E_INVALID_DEST_OP;
-            ic++;       /* no label adress yet, progressing one step */
-            cpyMatVals(str,arg1,arg2);
-            reg1 = atoi(&arg1[1]);
-            reg2 = atoi(&arg2[1]);
-            code[ic] |= reg1<<6;
-            code[ic++] |= reg2<<2;
-
-        }
-        else
-            return E_INVALID_DEST_OP;
-    }
-
-    if(isLabel(src_op)){
-        if(status == FIRST_PASS)
-            ic++;
-        else{
-
-        }
-    }
-    if(isNum(src_op))
-    {
-        word = atoi(src_op);
-        if(word < 0)
-            word = ~((-1)*word) + 1;
-        code[ic++] = word;
-    }
-    else if(src_op[0] == '#' && isNum(&src_op[1])){
-        word = atoi(&src_op[1]);
-        if(word < 0)
-            word = ~((-1)*word) + 1;
-        code[ic++] = word;
-    }
-    else if(isReg(src_op)){
-        word = atoi(&src_op[1]);
-        code[ic++] = word<<6;
-    }
-    else {
-        char label[MAX_LINE], arg1[MAX_LINE],arg2[MAX_LINE];
-        char *str;
-        int reg1,reg2;
-        str = strchr(src_op,'[');
-        if(str != NULL){
-            strncpy(label,src_op,str-src_op);
-            if(!isLabel(label)|| !isValidMat(str))
-                return E_INVALID_SRC_OP;
-            ic++;       /* no label adress yet, progressing one step */
-            cpyMatVals(str,arg1,arg2);
-            reg1 = atoi(&arg1[1]);
-            reg2 = atoi(&arg2[1]);
-            code[ic] |= reg1<<6;
-            code[ic++] |= reg2<<2;
-
-        }
-        else
-            return E_INVALID_SRC_OP;
-    }
-
+    ic++;
     return E_SUCCESS;
-
-    }
-
-
-
+}
 
 
 
@@ -236,17 +186,38 @@ int exist_label(char *label){
     return FALSE;
 }
 
-void printCodeBits(){
-    int i;
+void test(char *lvl,char *filename){
+    int i,k;
     unsigned mask =  1;
-    printf("Code counter:\n");
-    for(i = 0;i<=ic;i++){
-        printf("\t%3d:",i);
-        for(mask = 1,mask <<= 9;mask;mask>>= 1) {
+    FILE *testfile;
+    char line[MAX_LINE];
+    struct {
+        unsigned tf: 2;
+    }flag = {TRUE};
+    testfile = fopen(strcat(strcat(filename,".test."),lvl),"r");
+
+    printf("\n****************************************************\n\nCode counter:\n");
+    for(i = 0;i<ic;i++){
+        flag.tf = TRUE;
+        fgets(line,MAX_LINE,testfile);
+        printf("%3d: ",i);
+        for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
+            if(line[k] == '-')
+                k++;
+            if((mask&code[i]?1:0) != (line[k] - '0'))
+                flag.tf = FALSE;
             printf("%d", mask & code[i]? 1: 0);
             if(mask == 64 || mask == 4)
                 printf("-");
         }
+        if(strchr(line,'\n'))
+            line[strchr(line,'\n')-line] = '\0';
+
+        printf("  %s",line);
+        if(flag.tf == FALSE)
+            printf("\t\t ** No Match **");
+        else
+            printf("\t\t **  Match   **");
         printf("\n");
 
     }
