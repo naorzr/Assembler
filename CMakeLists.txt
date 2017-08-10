@@ -7,6 +7,5 @@ set(CMAKE_C_STANDARD 90)
 set(SOURCE_FILES
         main.c
         logger.c
-        file_content.c
-        assembler.c content_validation.c content_validation.h data_struct.c data_struct.h)
+        assembler.c content_validation.c content_validation.h data_struct.c data_struct.h error_handler.c error_handler.h helpers.c helpers.h)
 add_executable(EndProject ${SOURCE_FILES})

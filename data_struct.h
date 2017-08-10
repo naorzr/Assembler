@@ -5,15 +5,8 @@
 #include <stdlib.h>
 #ifndef ENDPROJECT_DATA_STRUCT_H
 #define ENDPROJECT_DATA_STRUCT_H
-#endif //ENDPROJECT_DATA_STRUCT_H
-
-#ifndef ENDPROJECT_CONTENT_VALIDATION_H
+#include "assembler.h"
 #include "content_validation.h"
-#endif
-
-#ifndef ENDPROJECT_FILE_CONTENT_H
-#include "file_content.h"
-#endif
 
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
@@ -61,7 +54,7 @@ symbolTable *symlloc(void);
 
 void updateSymbolTable(char *label,int address,int storageType,int iscmd);
 
-void updateDc(char *directive,char *op2);
+void updateData(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
 
@@ -77,4 +70,6 @@ int getIc(void);
 
 int exist_label(char *label);
 
-void test(char *lvl,char *filename);
+void test(const char *lvl,char *filename,char *pass);
+
+#endif //ENDPROJECT_DATA_STRUCT_H

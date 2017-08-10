@@ -4,17 +4,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#ifndef ENDPROJECT_CONTENT_VALIDATION_H
-    #include "content_validation.h"
-#endif
+#include "content_validation.h"
+#include "assembler.h"
+#include "data_struct.h"
+#include "helpers.h"
 
-#ifndef ENDPROJECT_FILE_CONTENT_H
-    #include "file_content.h"
-#endif
-
-#ifndef ENDPROJECT_DATA_STRUCT_H
-    #include "data_struct.h"
-#endif
 
 
 void printerr(char *lineContent,char *str,int lineNum){
@@ -23,9 +17,9 @@ void printerr(char *lineContent,char *str,int lineNum){
 
 }
 
-int isLabel(char *label){
+int is_label(char *label){
     int i,slen;
-    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || isDsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label) || isReg(label))
+    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || is_dsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label) || isReg(label))
         return FALSE;
 
     for(i = 0; i < slen-1 ;i++)
@@ -35,7 +29,7 @@ int isLabel(char *label){
     return TRUE;
 }
 
-int isDsm(char *word){
+int is_dsm(char *word){
     if(strcmp(word,"data") == 0 || strcmp(word,"string") == 0 || strcmp(word,"mat") == 0)
         return TRUE;
 
@@ -66,13 +60,17 @@ int isString(char *str){
 
 
 int isNum(char *str){
-    if(*str == '-' || *str == '+' || isdigit(*str)) {
-        while (*(++str) != '\0')
-            if (!isdigit(*str))
-                return FALSE;
-        return TRUE;
-    }
-    return FALSE;
+    Skip_Space(str);
+    if(*str == '-' || *str == '+')
+        str++;
+
+    while (isdigit(*str) != '\0')
+            str++;
+
+    if (*str == ' ')
+        Skip_Space(str);
+
+    return *str == '\0'?TRUE:FALSE;
 }
 
 int isReg(char *op){
@@ -85,34 +83,44 @@ int isReg(char *op){
     return FALSE;
 }
 
-int cpyMatVals(char *mat,char *arg1,char *arg2){
+int cpyMatVals(const char *mat,char *arg1,char *arg2){
     char *op1,*op2;
+    int i;
     char temp_mat[MAX_LINE];
     strcpy(temp_mat,mat);
-    Skip_Space(mat)
+    /* TODO: fix that skip space with the temp_mat. function not working cause its an array being passed(allocate dynamic memory) */
 
-    if(valid_parentheses(temp_mat) == FALSE)
-        return FALSE;
+    op1 = strchr(mat,'[');
+    for(i = 0;i<MAX_LINE && *(++op1) != ']';i++)
+        if(isspace(*op1))
+            continue;
+        else
+            arg1[i] = *op1;
+    arg1[i] = '\0';
 
-    op1 = strtok(temp_mat,"]");
-    if(op1 == NULL)
-        return FALSE;
-
-    op2 = strtok(NULL,"[");
-    if(op2 == NULL)
-        return FALSE;
-
-    Skip_Space(op2)
-    op2[strlen(op2)-1] = '\0';
-
-    strcpy(arg1,&op1[1]);
-    strcpy(arg2,op2);
+    op2 = strchr(op1,'[');
+    for(i = 0;i<MAX_LINE && *(++op2) != ']';i++)
+        if(isspace(*op2))
+            continue;
+        else
+            arg2[i] = *op2;
+    arg2[i] = '\0';
 
     return TRUE;
 }
 
 int isValidMatVal(char *val){
     if(isNum(val) || isReg(val))
+        return TRUE;
+    return FALSE;
+}
+
+int validMatInitializer(const char *mat){
+    char arg1[MAX_LINE],arg2[MAX_LINE];
+    if(!valid_parentheses(mat))
+        return FALSE;
+    cpyMatVals(mat,arg1,arg2);
+    if(isNum(arg1) && isNum(arg2))
         return TRUE;
     return FALSE;
 }
@@ -163,7 +171,7 @@ int getAddMode(char *op){
         return ADDMODE_NO_OPERAND;
     else if(op[0] == '#')
         return ADDMODE_IMMEDIATE;
-    else if(isLabel(op))
+    else if(is_label(op))
         return ADDMODE_DIRECT;
     else if(isReg(op))
         return ADDMODE_REG;
@@ -172,7 +180,7 @@ int getAddMode(char *op){
         char *str;
         str = strchr(op,'[');
         strncpy(label,op,str-op);
-        if(!isLabel(label)|| !isValidMat(str))
+        if(!is_label(label)|| !isValidMat(str))
             return ADDMODE_INVALID;
         return ADDMODE_MATRIX;
     }

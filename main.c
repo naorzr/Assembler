@@ -1,30 +1,19 @@
 #include <ctype.h>
-#ifndef ENDPROJECT_LOGGER_H
-    #include "logger.h"
-#endif
-#ifndef ENDPROJECT_FILE_CONTENT_H
-    #include "file_content.h"
-#endif
-#ifndef ENDPROJECT_ASSEMBLER_H
-    #include "assembler.h"
-#endif
 
-#ifndef ENDPROJECT_DATA_STRUCT_H
-    #include "data_struct.h"
-#endif
-
-#ifndef ENDPROJECT_CONTENT_VALIDATION_H
+#include "logger.h"
+#include "assembler.h"
+#include "data_struct.h"
 #include "content_validation.h"
-#endif
+#include "error_handler.h"
 
 char *getword(FILE *inpf) {
     int ch, i = 0;
     char *str = malloc(sizeof(char) * MAX_LINE);
 
-    while (!isspace(ch = getc(inpf)) && ch != EOF && ch != COMMA)
+    while (!isspace(ch = getc(inpf)) && ch != EOF && ch != ',')
         str[i++] = ch;
 
-    if (ch == NEWLINE || ch == EOF) {
+    if (ch == '\n' || ch == EOF) {
         if (i == 0)
             str[i++] = ch;
         else
@@ -42,8 +31,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     FILE *inpf = fopen(argv[1],"r");
-    buildFileContent(inpf);
-    test("firstpass",argv[1]);      /* helper method, wont go into the actual code */
+    first_pass(inpf);
+    test("complete",argv[1],"firstpass");      /* helper method, wont go into the actual code */
 
 //    rewind(inpf);
 //    do {

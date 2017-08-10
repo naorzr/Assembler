@@ -2,13 +2,10 @@
 // Created by naortif on 7/26/17.
 //
 
-#ifndef ENDPROJECT_FILE_CONTENT_H
-#include "content_validation.h"
-#endif
 
-#ifndef ENDPROJECT_DATA_STRUCT_H
-    #include "data_struct.h"
-#endif
+#include "content_validation.h"
+#include "data_struct.h"
+
 
 
 #include <string.h>
@@ -68,38 +65,64 @@ void updateSymbolTable(char *label,int address,int storageType,int iscmd){
 
 }
 
-/* TODO finish this function */
-/* numOfMemWords: takes the operand string and returns the number of words needed for it be stored */
-unsigned numOfMemWords(char *operand,int state){
-    if(isNum(operand) || isValidMat(operand) || isLabel(operand))
-        return 1;
-
-    if(isString(operand))
-        return (unsigned) strlen(operand) - 1;  /* 1 extra word for the terminating null and reducing 2 word numbers for the quotation */
-
-
-
-
-
-}
 
 /* TODO needs to finish this function */
-void updateDc(char *directive,char *op2){
-    /*
-    if(data_counter == NULL){
-        data_counter = (dataCounter *) malloc(sizeof(dataCounter));
-        if(data_counter == NULL){
-            fprintf(stderr,"Could not allocate memory");
-            exit(EXIT_FAILURE);
+void updateData(char *directive,char *op_string){
+    char arg1[MAX_LINE],arg2[MAX_LINE],mat[MAX_LINE];
+    char *param;
+    int bitword, mat_word_size = 0;
+    if(strcmp(directive,"data") == 0){
+        param = strtok(op_string,",NULL");
+
+        do {
+            if (param == NULL || !isNum(param)) {
+                printf("Invalid data param");
+                return;
+            }
+            bitword = atoi(param);
+            if (bitword < 0)
+                bitword = ~(bitword * -1) + 1;
+            data[dc++] = bitword;
+        }while (param = strtok(NULL,",NULL"));
+
+    } else if(strcmp(directive,"string") == 0){
+        param = strtok(op_string,"");
+        if(param == NULL || !isString(param)){
+            printf("Invalid string param");
+            return;
         }
+        param[strlen(param)-1] = '\0';
+        param = &param[1];
+        while(*param)
+            data[dc++] = *(param++);
 
+        data[dc++] = '\0';
+
+    } else if(strcmp(directive,"mat") == 0){
+        param = strtok(op_string," ");
+        if(!validMatInitializer(param)){
+            printf("Invalid mat initializer");
+            return;
+        }
+        cpyMatVals(param,arg1,arg2);
+        mat_word_size = atoi(arg1)*atoi(arg2);
+
+        while (param = strtok(NULL,",NULL")){
+            mat_word_size--;
+            if (!isNum(param)) {
+                printf("Invalid data param");
+                return;
+            }
+            bitword = atoi(param);
+            if (bitword < 0)
+                bitword = ~(bitword * -1) + 1;
+            data[dc++] = bitword;
+        }
+        while(mat_word_size--)
+            dc++;
     }
-     */
 }
 
-void updateIcCounter(char *op1,char *op2,int *ic){
-
-}
 
 
 int strToBinWord(char *str,AddressMode mode,int op_type){
@@ -186,7 +209,7 @@ int exist_label(char *label){
     return FALSE;
 }
 
-void test(char *lvl,char *filename){
+void test(const char *lvl,char *filename,char *pass){
     int i,k;
     unsigned mask =  1;
     FILE *testfile;
@@ -194,8 +217,10 @@ void test(char *lvl,char *filename){
     struct {
         unsigned tf: 2;
     }flag = {TRUE};
-    testfile = fopen(strcat(strcat(filename,".test."),lvl),"r");
-
+    testfile = fopen(strcat(strcat(filename,".test."),pass),"r");
+    if(testfile == NULL)
+        exit(EXIT_FAILURE);
+    if((strcmp(lvl,"code") == 0)|| strcmp(lvl,"complete") == 0){
     printf("\n****************************************************\n\nCode counter:\n");
     for(i = 0;i<ic;i++){
         flag.tf = TRUE;
@@ -220,6 +245,34 @@ void test(char *lvl,char *filename){
             printf("\t\t **  Match   **");
         printf("\n");
 
+    }
+    }
+    if((strcmp(lvl,"data") == 0) || strcmp(lvl,"complete") == 0) {
+        printf("\n****************************************************\n\nData counter:\n");
+        for(i = 0;i<dc;i++){
+            flag.tf = TRUE;
+            fgets(line,MAX_LINE,testfile);
+            printf("%3d: ",i+ic);
+            for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
+                if(line[k] == '-')
+                    k++;
+                if((mask&data[i]?1:0) != (line[k] - '0'))
+                    flag.tf = FALSE;
+                printf("%d", mask & data[i]? 1: 0);
+                if(mask == 64 || mask == 4)
+                    printf("-");
+            }
+            if(strchr(line,'\n'))
+                line[strchr(line,'\n')-line] = '\0';
+
+            printf("  %s",line);
+            if(flag.tf == FALSE)
+                printf("\t\t ** No Match **");
+            else
+                printf("\t\t **  Match   **");
+            printf("\n");
+
+        }
     }
     printf("\n");
 }

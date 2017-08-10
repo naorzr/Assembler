@@ -4,7 +4,8 @@
 #ifndef ENDPROJECT_CONTENT_VALIDATION_H
 #define ENDPROJECT_CONTENT_VALIDATION_H
 
-#endif //ENDPROJECT_CONTENT_VALIDATION_H
+#include "string.h"
+
 enum {OFF,ON};
 enum {FALSE = 0,TRUE = 1};
 typedef enum {
@@ -15,8 +16,11 @@ typedef enum {
     ADDMODE_MATRIX = 2,
     ADDMODE_REG = 3,
     }AddressMode;
+
 #define Is_External(label) !strcmp((label),"extern")
 #define Is_Entry(label)     !strcmp((label),"entry")
+#define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
+#define DIRECTIVE_DEC(word)     (word)[0] == '.'
 
 typedef enum err_t{
     E_SUCCESS = 1,
@@ -32,9 +36,9 @@ void printerr(char *lineContent,char *str,int lineNumber);
 
 int isReg(char *word);
 
-int isLabel(char *label);
+int is_label(char *label);
 
-int isDsm(char *word);
+int is_dsm(char *word);
 
 int isCmd(char *word);
 
@@ -44,10 +48,14 @@ int isNum(char *str);
 
 int isValidMatVal(char *val);
 
-int cpyMatVals(char *mat,char *arg1,char *arg2);
+int cpyMatVals(const char *mat,char *arg1,char *arg2);
 
 int isValidMat(char *str);
 
 int getAddMode(char *op);
 
 err_t isValidAddressMode(char *cmd,AddressMode src_op, AddressMode dest_op);
+
+int validMatInitializer(const char *mat);
+
+#endif //ENDPROJECT_CONTENT_VALIDATION_H

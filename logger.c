@@ -24,7 +24,7 @@ void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ...) {
                 switch (*++fmt) {
                     case 's':
                         /* set r as the next char in list (string) */
-                        s = va_arg(list, char *);
+                        s = va_arg(list,char *);
                         fprintf(loc, "%s", s);
                         break;
 
