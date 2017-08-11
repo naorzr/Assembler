@@ -7,9 +7,10 @@
 
 enum ErrorTypes{
     ERR_LABEL,
-    ERR_EXPECTED_SENTENCE,
+    ERR_EXPECTED_ARG,
     ERR_INV_WORD,
     ERR_STOP,
+    ERR_LABEL_REDECLARED,
     NO_ERR_OCCURRED,
 };
 void update_err_log(enum ErrorTypes err,int lineNum,char *line);

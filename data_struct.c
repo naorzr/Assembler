@@ -5,8 +5,8 @@
 
 #include "content_validation.h"
 #include "data_struct.h"
-
-
+#include "error_handler.h"
+#include "content_validation.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -35,7 +35,10 @@ const struct COMMAND const COMMANDS[] = {
 const char * const REGISTERS[NUM_OF_REG] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
 
 
-static symbolTable *symbolTab_tail = NULL, *symbolTab_head = NULL;
+static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
+
+
+
 static dataCounter *data_counter = NULL;
 
 static int dc = 0;
@@ -44,24 +47,45 @@ static int ic = 0;
 static unsigned code[MAX_FILE_SIZE] = {0};
 static unsigned data[MAX_FILE_SIZE] = {0};
 
+void *safe_malloc(int nmemb,size_t size){
+    void *ptr = malloc(size*nmemb);
+    if(ptr == NULL) {    /* TODO need to add code - error printing */
+        fprintf(stderr,"Could not allocate memory");
+        exit(EXIT_FAILURE);
+    }
 
-symbolTable *symlloc(void){
-    symbolTable *ptr = (symbolTable *) malloc(sizeof(symbolTable));
-    if(ptr)    /* TODO need to add code - error printing */
-        return ptr;
-    exit(EXIT_FAILURE);
-
+    return ptr;
 }
 
-void updateSymbolTable(char *label,int address,int storageType,int iscmd){
-    if(symbolTab_head == NULL)
-        symbolTab_head = symbolTab_tail = symlloc();
-    else
-        symbolTab_tail = (symbolTab_tail->next = symlloc());
-    strcpy(symbolTab_tail->label,label);
-    symbolTab_tail->address = address;
-    symbolTab_tail->storageType = storageType;
-    symbolTab_tail->iscmd = iscmd;
+
+enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int iscmd){
+    symbolTable *node;
+    node = NEW_SYMTABLE_NODE(label,address,storageType,iscmd)
+
+    if(symbolTab_head == NULL) {
+        symbolTab_tail = symbolTab_head = node;
+        return NO_ERR_OCCURRED;
+    }
+
+    symbolTab_tail = symbolTab_head;
+
+    LOOP {
+        if (strcmp(symbolTab_tail->label, node->label) == 0)
+            return ERR_LABEL_REDECLARED;
+        else if (strcmp(symbolTab_tail->label, node->label) < 0) {
+            if (symbolTab_tail->left == NULL) {
+                symbolTab_tail->left = node;
+                return NO_ERR_OCCURRED;
+            } else
+                symbolTab_tail = symbolTab_tail->left;
+        } else {
+            if (symbolTab_tail->right == NULL) {
+                symbolTab_tail->right = node;
+                return NO_ERR_OCCURRED;
+            } else
+                symbolTab_tail = symbolTab_tail->right;
+        }
+    }
 
 }
 
@@ -275,4 +299,13 @@ void test(const char *lvl,char *filename,char *pass){
         }
     }
     printf("\n");
+}
+
+void clear_data_stacks(void){
+
+}
+
+
+void free_symbtable(void){
+
 }

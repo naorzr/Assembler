@@ -7,11 +7,19 @@
 #define ENDPROJECT_DATA_STRUCT_H
 #include "assembler.h"
 #include "content_validation.h"
-
+#define LOOP  for(;;)
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
+
+#define NEW_SYMTABLE_NODE(lab,add,storage,cmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
+                                                strcpy(node->label,(lab));\
+                                                node->address = (add);\
+                                                node->storageType = (storage);\
+                                                node->iscmd = (cmd);\
+                                                node-> right = node->left = NULL;\
+
 
 enum {SRC_OP,DEST_OP};
 enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
@@ -21,7 +29,8 @@ typedef struct symbolTable{
     int address;
     int storageType;
     int iscmd;
-    struct symbolTable *next;
+    struct symbolTable *left;
+    struct symbolTable *right;
 }symbolTable;
 
 typedef struct dataCounter{
@@ -52,7 +61,7 @@ struct COMMAND{
 
 symbolTable *symlloc(void);
 
-void updateSymbolTable(char *label,int address,int storageType,int iscmd);
+enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int iscmd);
 
 void updateData(char *directive,char *op2);
 
@@ -61,6 +70,9 @@ void updateIcCounter(char *op1,char *op2,int *ic);
 
 err_t updateIc(char *cmd,char *op1,char *op2,int state);
 
+void clear_data_stacks(void);
+
+void free_symbtable(void);
 
 unsigned numOfMemWords(char *operand,int state);
 
