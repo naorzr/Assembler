@@ -108,7 +108,6 @@ enum ErrorTypes parse_line(char *lineContent) {
 char* get_line_content(FILE *inpf){
     static char lineContent[MAX_LINE];
     char *lineptr = lineContent;
-    lineNum++;
 
     if(fgets(lineContent, MAX_LINE, inpf) != NULL) {
         Skip_Space(lineptr);
