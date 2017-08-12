@@ -19,7 +19,7 @@ void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ...) {
 
         while (*fmt) {
             if (*fmt != '%')
-                putc(*fmt, stdout);
+                putc(*fmt, loc);
             else {
                 switch (*++fmt) {
                     case 's':

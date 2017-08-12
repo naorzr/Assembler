@@ -1,12 +1,12 @@
 
 #include "assembler.h"
 #include "data_struct.h"
-#include "string.h"
+#include <string.h>
 #include "error_handler.h"
 #include "helpers.h"
 #include "logger.h"
 
-static int lineNum = 1;
+static int lineNum = 0;
 
 char* get_line_content(FILE *inpf);
 enum ErrorTypes parse_line(char *lineContent);
@@ -44,13 +44,13 @@ enum ErrorTypes parse_line(char *lineContent) {
         unsigned label: 2;
     }flag = {0};
     dc = getDc(), ic = getIc();
+    lineNum++;
 
     if(lineContent[0] == ';')       /* case of a comment line */
         return NO_ERR_OCCURRED;
     if((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
         return NO_ERR_OCCURRED;
 
-    lineNum++;
     if (LABEL_DEC(word)) {               /* case of label declaration */
         strcpy(label, word);
         if(!is_label(label))
@@ -99,7 +99,7 @@ enum ErrorTypes parse_line(char *lineContent) {
               lineContent==NULL?"":lineContent, label, cmd, directive,
               op1, op2);
 
-
+    return NO_ERR_OCCURRED;
 
 }
 
