@@ -39,6 +39,7 @@ enum ErrorTypes parse_line(char *lineContent) {
     unsigned dc,ic;
     char label[MAX_LINE] = "",cmd[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
     char *word;
+    enum ErrorTypes error = NO_ERR_OCCURRED;
     const char comma[] = " ,\t";
     struct {
         unsigned label: 2;
@@ -64,7 +65,7 @@ enum ErrorTypes parse_line(char *lineContent) {
         strcpy(directive, &word[1]);
         if (is_dsm(directive)) {
             if (flag.label)
-                updateSymbolTable(label, dc, DSM, NOT_CMD);
+                error = updateSymbolTable(label, dc, DSM, NOT_CMD);
             if (word = safe_strtok(NULL, "")) {
 
             }
@@ -75,7 +76,7 @@ enum ErrorTypes parse_line(char *lineContent) {
             if ((word = safe_strtok(NULL, " \t")) == NULL)
                 return ERR_EXPECTED_ARG;
             strcpy(label, word);
-            updateSymbolTable(label, EXTERNAL_ADDRESS, strcmp(directive, "extern") == 0 ? EXTERN : ENTRY, NOT_CMD);
+            error = updateSymbolTable(label, EXTERNAL_ADDRESS, strcmp(directive, "extern") == 0 ? EXTERN : ENTRY, NOT_CMD);
         }
     }
     else if (isCmd(word)) {         /* case of a command*/
@@ -99,7 +100,7 @@ enum ErrorTypes parse_line(char *lineContent) {
               lineContent==NULL?"":lineContent, label, cmd, directive,
               op1, op2);
 
-    return NO_ERR_OCCURRED;
+    return error;
 
 }
 
