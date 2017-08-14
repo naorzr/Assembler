@@ -10,7 +10,7 @@
 enum{FIRST_PASS, SECOND_PASS};
 /* TODO: might want to consider making the return type err_t , thus making the error process more natural */
 
-enum ErrorTypes first_pass(FILE *inpf);
+enum ErrorTypes parse_file(FILE *inpf,int passage);
 
 
 #endif //ENDPROJECT_ASSEMBLER_H

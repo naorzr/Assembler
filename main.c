@@ -31,8 +31,10 @@ int main(int argc, char **argv) {
         return 1;
     }
     FILE *inpf = fopen(argv[1],"r");
-    first_pass(inpf);
-    test("complete",argv[1],"firstpass");      /* helper method, wont go into the actual code */
+    parse_file(inpf,FIRST_PASS);
+         /* helper method, wont go into the actual code */
+    parse_file(inpf,SECOND_PASS);
+    test("complete",argv[1],"secondpass");
 
 //    rewind(inpf);
 //    do {

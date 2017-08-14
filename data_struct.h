@@ -13,21 +13,25 @@
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 
-#define NEW_SYMTABLE_NODE(lab,add,storage,cmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
+#define NEW_SYMTABLE_NODE(lab,add,position,isentry,iscmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
                                                 strcpy(node->label,(lab));\
                                                 node->address = (add);\
-                                                node->storageType = (storage);\
-                                                node->iscmd = (cmd);\
+                                                node->position = (position);\
+                                                node->isentry = (isentry);\
+                                                node->iscmd = (iscmd);\
                                                 node-> right = node->left = NULL;\
 
 
 enum {SRC_OP,DEST_OP};
-enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,ENTRY,DSM,CMD,NOT_CMD,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
+
+enum positions{ABSOLUTE,EXTERNAL,RELOCATABLE};
+enum{EXTERNAL_ADDRESS = -1, NONE,EXTERN,NONE_ENTRY = 0,ENTRY,DSM,CMD2=4,NOT_CMD2=5,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
 
 typedef struct symbolTable{
     char label[MAX_LINE];
     int address;
-    int storageType;
+    int position;
+    int isentry: 2;
     int iscmd;
     struct symbolTable *left;
     struct symbolTable *right;
@@ -56,12 +60,12 @@ struct COMMAND{
     } addressingMode_op2;
 };
 
-
+#define STARTING_ADD 100
 
 
 symbolTable *symlloc(void);
 
-enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int iscmd);
+enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int isentry,int iscmd);
 
 void updateData(char *directive,char *op2);
 
@@ -84,4 +88,5 @@ int exist_label(char *label);
 
 void test(const char *lvl,char *filename,char *pass);
 
+void set_offset(void);
 #endif //ENDPROJECT_DATA_STRUCT_H

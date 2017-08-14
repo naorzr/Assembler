@@ -41,8 +41,9 @@ static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
 
 static dataCounter *data_counter = NULL;
 
-static int dc = 0;
-static int ic = 0;
+static int dc = STARTING_ADD;
+static int ic = STARTING_ADD;
+static int offset = 0;
 
 static unsigned code[MAX_FILE_SIZE] = {0};
 static unsigned data[MAX_FILE_SIZE] = {0};
@@ -57,10 +58,14 @@ void *safe_malloc(int nmemb,size_t size){
     return ptr;
 }
 
+symbolTable *fetch_label_symtable(){
 
-enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int iscmd){
+}
+
+
+enum ErrorTypes updateSymbolTable(char *label,int address,int position,int isentry,int iscmd){
     symbolTable *node;
-    node = NEW_SYMTABLE_NODE(label,address,storageType,iscmd)
+    node = NEW_SYMTABLE_NODE(label,address,position,isentry,iscmd)
 
     if(symbolTab_head == NULL) {
         symbolTab_tail = symbolTab_head = node;
@@ -75,12 +80,16 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int is
         else if (strcmp(symbolTab_tail->label, node->label) < 0) {
             if (symbolTab_tail->left == NULL) {
                 symbolTab_tail->left = node;
+                if(isentry)
+                    dc++;
                 return NO_ERR_OCCURRED;
             } else
                 symbolTab_tail = symbolTab_tail->left;
         } else {
             if (symbolTab_tail->right == NULL) {
                 symbolTab_tail->right = node;
+                if(isentry)
+                    dc++;
                 return NO_ERR_OCCURRED;
             } else
                 symbolTab_tail = symbolTab_tail->right;
@@ -92,6 +101,7 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int is
 
 /* TODO needs to finish this function */
 void updateData(char *directive,char *op_string){
+
     char arg1[MAX_LINE],arg2[MAX_LINE],mat[MAX_LINE];
     char *param;
     int bitword, mat_word_size = 0;
@@ -148,42 +158,81 @@ void updateData(char *directive,char *op_string){
 }
 
 
+symbolTable *get_symbolId(char *label){
+    symbolTable *node = symbolTab_head;
+    while(node){
+        if((strcmp(node->label,label)) == 0)
+            return node;
+        else if(strcmp(node->label,label) < 0)
+            node = node->left;
+        else
+            node = node->right;
+    }
+    return NULL;
+}
 
-int strToBinWord(char *str,AddressMode mode,int op_type){
-    int word;
+int symbToBin(symbolTable *symb){
+    return ((symb->address + (symb->iscmd == NOT_CMD2?offset:0))<<2) | symb->position;
+}
+
+void strToBinWord(char *str,AddressMode mode,int op_type,int passage){
+    int bits = 0;
+    static struct {
+        unsigned is_srcop_reg:2;
+        unsigned is_destop_reg:2;
+    }flag = {FALSE,FALSE};
+    if(op_type == SRC_OP) flag.is_srcop_reg = FALSE;
+    symbolTable *symbolId;
+    char label[MAX_LINE] = "";
     char arg1[MAX_LINE],arg2[MAX_LINE];
 
     switch(mode){
         case ADDMODE_IMMEDIATE:
-            word = atoi(&str[1]);
-            if(word < 0)
-                word = ~((-1)*word) + 1;
-            return word<<2;
+            bits = atoi(&str[1]);
+            if(bits < 0)
+                bits = ~((-1)*bits) + 1;
+            code[++ic] |= bits<<2;
+            break;
         case ADDMODE_DIRECT:
-            word = atoi(str);
-            if(word < 0)
-                word = ~((-1)*word) + 1;
-            return word<<2;
+            if(passage == SECOND_PASS && (symbolId = get_symbolId(str)) != NULL)
+                code[++ic] |= symbToBin(get_symbolId(str));
+            else
+                code[++ic] |= 0;
+            break;
         case ADDMODE_MATRIX:
-            str = strchr(str,'[');
-            ic++;       /* no label adress yet, progressing one step */
+            strncpy(label,str,strchr(str,'[')-str);
+            if(passage == FIRST_PASS)
+                ic++;       /* no label adress yet, progressing one step */
+            else if(passage == SECOND_PASS){
+                code[++ic] |= symbToBin(get_symbolId(label));
+            }
             cpyMatVals(str,arg1,arg2);
-            return (atoi(&arg1[1])<<6) | atoi(&arg2[1])<<2;
+            code[++ic] |= (atoi(&arg1[1])<<6) | atoi(&arg2[1])<<2;
+            break;
         case ADDMODE_REG:
-            word = atoi(&str[1]);
-            return word<<(op_type == SRC_OP?6:2);
+            if(op_type==SRC_OP)
+                flag.is_srcop_reg = TRUE,ic++;
+            if(op_type==DEST_OP && flag.is_srcop_reg != TRUE)
+                ic++;
+            bits = atoi(&str[1]);
+            code[ic] |= bits<<(op_type == SRC_OP?6:2);
+            break;
         case ADDMODE_NO_OPERAND:
-            return 0;
+            code[ic] |= 0;
         default:
-            return 0;
+            return ;
     }
 
 }
 
-err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
+void set_offset(void){
+    offset = ic-STARTING_ADD;
+}
+
+err_t updateIc(char *cmd,char *src_op,char *dest_op,int passage){
     err_t state;
     int word, i;
-         /* will be the matrix argument if needed */
+    /* will be the matrix argument if needed */
     char *str;
     AddressMode srcop_mode,destop_mode;
 
@@ -199,20 +248,15 @@ err_t updateIc(char *cmd,char *src_op,char *dest_op,int status){
             break;
         }
     }
+    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND?0:srcop_mode)<<4;
+    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND?0:destop_mode)<<2;
 
-    /* TODO: */
-    code[ic] |= srcop_mode == ADDMODE_NO_OPERAND?0:srcop_mode<<4;
-    code[ic] |= destop_mode == ADDMODE_NO_OPERAND?0:destop_mode<<2;
-
-    if(srcop_mode != ADDMODE_NO_OPERAND)
-        code[++ic] |= strToBinWord(src_op,srcop_mode,SRC_OP);
-    if(destop_mode != ADDMODE_NO_OPERAND)
-        code[srcop_mode == ADDMODE_REG && destop_mode == ADDMODE_REG?ic:++ic] |= strToBinWord(dest_op,destop_mode,DEST_OP);
+    strToBinWord(src_op,srcop_mode,SRC_OP,passage);
+    strToBinWord(dest_op,destop_mode,DEST_OP,passage);
 
     ic++;
     return E_SUCCESS;
 }
-
 
 
 
@@ -246,7 +290,7 @@ void test(const char *lvl,char *filename,char *pass){
         exit(EXIT_FAILURE);
     if((strcmp(lvl,"code") == 0)|| strcmp(lvl,"complete") == 0){
     printf("\n****************************************************\n\nCode counter:\n");
-    for(i = 0;i<ic;i++){
+    for(i = STARTING_ADD;i<ic;i++){
         flag.tf = TRUE;
         fgets(line,MAX_LINE,testfile);
         printf("%3d: ",i);
@@ -273,7 +317,7 @@ void test(const char *lvl,char *filename,char *pass){
     }
     if((strcmp(lvl,"data") == 0) || strcmp(lvl,"complete") == 0) {
         printf("\n****************************************************\n\nData counter:\n");
-        for(i = 0;i<dc;i++){
+        for(i = STARTING_ADD;i<dc;i++){
             flag.tf = TRUE;
             fgets(line,MAX_LINE,testfile);
             printf("%3d: ",i+ic);
@@ -302,10 +346,27 @@ void test(const char *lvl,char *filename,char *pass){
 }
 
 void clear_data_stacks(void){
-
+    while(dc > STARTING_ADD)
+        data[dc--] = 0;
+    while(ic > STARTING_ADD)
+        data[ic--] = 0;
+    data[dc] = 0;
+    data[ic] = 0;
 }
 
+void free_symtree(symbolTable* node) {
+    if (node == NULL)
+        return;
+    if (node->right == NULL && node->left == NULL)
+        free(node);
+    else {
+        free_symtree(node->right);
+        free_symtree(node->left);
+    }
+}
 
 void free_symbtable(void){
-
+    free_symtree(symbolTab_head);
+    symbolTab_tail = symbolTab_head = NULL;
 }
+

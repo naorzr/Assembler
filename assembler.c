@@ -9,12 +9,12 @@
 static int lineNum = 0;
 
 char* get_line_content(FILE *inpf);
-enum ErrorTypes parse_line(char *lineContent);
+enum ErrorTypes parse_line(char *lineContent,int passage);
 
 
 /* first_pass: takes in a file and parse all content. translating it to binary code and storing it in the relevant data structs
  * return: in case of an error returns the specific type of error */
-enum ErrorTypes first_pass(FILE *inpf){
+enum ErrorTypes parse_file(FILE *inpf,int passage){
     struct {
         unsigned stop: 2;
     }flag = {FALSE};
@@ -22,11 +22,18 @@ enum ErrorTypes first_pass(FILE *inpf){
     enum ErrorTypes error;
 
     /* clears data/code and symbol table */
-    clear_data_stacks();
-    free_symbtable();
+    if(passage == FIRST_PASS) {
+        clear_data_stacks();
+        free_symbtable();
+    }
+    if(passage == SECOND_PASS) {
+        set_offset();
+        rewind(inpf);
+        clear_data_stacks();
+    }
 
     while((lineContent = get_line_content(inpf)) != NULL)       /* parse line by line */
-        if((error = parse_line(lineContent)) != NO_ERR_OCCURRED) {
+        if((error = parse_line(lineContent,passage)) != NO_ERR_OCCURRED) {
             update_err_log(error, lineNum,lineContent);
             flag.stop = TRUE;
         }
@@ -35,7 +42,7 @@ enum ErrorTypes first_pass(FILE *inpf){
 
 /* parse_line: parse each word in the line, storing it in the relavent data struct and converting to binary if needed
  * return: error type in case of an error */
-enum ErrorTypes parse_line(char *lineContent) {
+enum ErrorTypes parse_line(char *lineContent,int passage) {
     unsigned dc,ic;
     char label[MAX_LINE] = "",cmd[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
     char *word;
@@ -53,6 +60,7 @@ enum ErrorTypes parse_line(char *lineContent) {
         return NO_ERR_OCCURRED;
 
     if (LABEL_DEC(word)) {               /* case of label declaration */
+        word[strlen(word)-1] = '\0';
         strcpy(label, word);
         if(!is_label(label))
             return ERR_LABEL;
@@ -64,8 +72,8 @@ enum ErrorTypes parse_line(char *lineContent) {
     if (DIRECTIVE_DEC(word)) {      /* case of a directive declaration */
         strcpy(directive, &word[1]);
         if (is_dsm(directive)) {
-            if (flag.label)
-                error = updateSymbolTable(label, dc, DSM, NOT_CMD);
+            if (flag.label && passage == FIRST_PASS)
+                error = updateSymbolTable(label, dc, RELOCATABLE,NONE_ENTRY,NOT_CMD2);
             if (word = safe_strtok(NULL, "")) {
 
             }
@@ -76,11 +84,18 @@ enum ErrorTypes parse_line(char *lineContent) {
             if ((word = safe_strtok(NULL, " \t")) == NULL)
                 return ERR_EXPECTED_ARG;
             strcpy(label, word);
-            error = updateSymbolTable(label, EXTERNAL_ADDRESS, strcmp(directive, "extern") == 0 ? EXTERN : ENTRY, NOT_CMD);
+            if(flag.label == TRUE && passage == FIRST_PASS)
+                if(strcmp(directive,"extern") == 0)
+                    error = updateSymbolTable(label, EXTERNAL_ADDRESS, ABSOLUTE, NONE_ENTRY,NOT_CMD2);
+                else
+                    error = updateSymbolTable(label,dc,RELOCATABLE,ENTRY,NOT_CMD2);
         }
     }
     else if (isCmd(word)) {         /* case of a command*/
         strcpy(cmd, word);
+
+        if(flag.label == TRUE && passage == FIRST_PASS)
+            error = updateSymbolTable(label,ic,RELOCATABLE,NONE_ENTRY,CMD2);
 
         if (word = safe_strtok(NULL, comma))
             strcpy(op1, word);
@@ -88,9 +103,9 @@ enum ErrorTypes parse_line(char *lineContent) {
             strcpy(op2, word);
 
         if (strcmp(op2, "") == 0)
-            updateIc(cmd, "", op1, FIRST_PASS);
+            updateIc(cmd, "", op1, passage);
         else
-            updateIc(cmd, op1, op2, FIRST_PASS);
+            updateIc(cmd, op1, op2, passage);
     }
     if((word = safe_strtok(NULL,"")) != NULL)
         return ERR_INV_WORD;
