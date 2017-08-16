@@ -68,27 +68,32 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         if((word = safe_strtok(NULL, " \t")) == NULL)
             return ERR_EXPECTED_ARG;
     }
-
-    if (DIRECTIVE_DEC(word)) {      /* case of a directive declaration */
+    if(IS_DIRECTIVE(word)) {       /* case of a directive , in our project a directive is prefixed by a dot*/
         strcpy(directive, &word[1]);
-        if (is_dsm(directive)) {
-            if (flag.label && passage == FIRST_PASS)
-                error = updateSymbolTable(label, dc, RELOCATABLE,NONE_ENTRY,NOT_CMD2);
-            if (word = safe_strtok(NULL, "")) {
+        if (is_dsm(directive)) {      /* case it's a .data/.string/.mat directive */
+            if (is_dsm(directive)) {
+                if (flag.label && passage == FIRST_PASS)
+                    error = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
+                if (word = safe_strtok(NULL, "")) {
 
+                }
+                strcpy(op1, word);
+                updateData(directive, op1);
             }
-            strcpy(op1, word);
-            updateData(directive, op1);
-            /*TODO: need to check what to actually do with external or entry labels */
-        } else if ((Is_External(directive) || Is_Entry(directive))) {
-            if ((word = safe_strtok(NULL, " \t")) == NULL)
-                return ERR_EXPECTED_ARG;
+        } else if (Is_External(directive)) {
+            if ((word = safe_strtok(NULL, "")) == NULL)
+                return ERR_EXPECTED_LABEL;
             strcpy(label, word);
-            if(flag.label == TRUE && passage == FIRST_PASS)
-                if(strcmp(directive,"extern") == 0)
-                    error = updateSymbolTable(label, EXTERNAL_ADDRESS, ABSOLUTE, EXTERNAL,NOT_CMD2);
-                else
-                    error = updateSymbolTable(label,dc,RELOCATABLE,ENTRY,NOT_CMD2);
+            if(passage == FIRST_PASS)
+                error = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
+
+        } else if (Is_Entry(directive)) {
+            if ((word = safe_strtok(NULL, "")) == NULL)
+                return ERR_EXPECTED_LABEL;
+            strcpy(label, word);
+            if(passage == SECOND_PASS)
+                error = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
+
         }
     }
     else if (isCmd(word)) {         /* case of a command*/

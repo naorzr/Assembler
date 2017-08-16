@@ -17,10 +17,10 @@ typedef enum {
     ADDMODE_REG = 3,
     }AddressMode;
 
-#define Is_External(label) !strcmp((label),"extern")
-#define Is_Entry(label)     !strcmp((label),"entry")
+#define Is_External(label) strcmp((label),"extern") == 0
+#define Is_Entry(label)     strcmp((label),"entry") == 0
 #define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
-#define DIRECTIVE_DEC(word)     (word)[0] == '.'
+#define IS_DIRECTIVE(word)     (word)[0] == '.'
 
 typedef enum err_t{
     E_SUCCESS = 1,

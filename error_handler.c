@@ -23,8 +23,14 @@ void update_err_log(enum ErrorTypes err, int lineNum, char *line){
         case ERR_EXPECTED_ARG:
             strcpy(errMsg, "Expected argument");
             break;
+        case ERR_EXPECTED_LABEL:
+            strcpy(errMsg,"Expected a label");
+            break;
         case ERR_INV_WORD:
             strcpy(errMsg, "Invalid word");
+            break;
+        case ERR_INV_DIRECTIVE:
+            strcpy(errMsg, "Invalid directive");
             break;
         case ERR_STOP:
             strcpy(errMsg, "Expected argument");

@@ -48,15 +48,6 @@ static int offset = 0;
 static unsigned code[MAX_FILE_SIZE] = {0};
 static unsigned data[MAX_FILE_SIZE] = {0};
 
-void *safe_malloc(int nmemb,size_t size){
-    void *ptr = malloc(size*nmemb);
-    if(ptr == NULL) {    /* TODO need to add code - error printing */
-        fprintf(stderr,"Could not allocate memory");
-        exit(EXIT_FAILURE);
-    }
-
-    return ptr;
-}
 
 symbolTable *fetch_label_symtable(){
 
@@ -75,21 +66,23 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int forma
     symbolTab_tail = symbolTab_head;
 
     LOOP {
-        if (strcmp(symbolTab_tail->label, node->label) == 0)
-            return ERR_LABEL_REDECLARED;
+        if (strcmp(symbolTab_tail->label, node->label) == 0) {
+            if(format == ENTRY) {
+                symbolTab_tail->position |= position;
+                return NO_ERR_OCCURRED;
+            }
+            else
+                return ERR_LABEL_REDECLARED;
+        }
         else if (strcmp(symbolTab_tail->label, node->label) < 0) {
             if (symbolTab_tail->left == NULL) {
                 symbolTab_tail->left = node;
-                if(format)
-                    dc++;
                 return NO_ERR_OCCURRED;
             } else
                 symbolTab_tail = symbolTab_tail->left;
         } else {
             if (symbolTab_tail->right == NULL) {
                 symbolTab_tail->right = node;
-                if(format)
-                    dc++;
                 return NO_ERR_OCCURRED;
             } else
                 symbolTab_tail = symbolTab_tail->right;
@@ -172,7 +165,7 @@ symbolTable *get_symbolId(char *label){
 }
 
 int symbToBin(symbolTable *symb){
-    return ((symb->address + (symb->iscmd == NOT_CMD2?offset:0))<<2) | symb->position;
+    return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
 }
 
 void strToBinWord(char *str,AddressMode mode,int op_type,int passage){
