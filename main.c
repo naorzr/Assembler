@@ -26,22 +26,27 @@ char *getword(FILE *inpf) {
 int main(int argc, char **argv) {
 
     char *str;
+    char fileName[MAX_FILE_NAME];
+    int i = 0;
+    FILE *inpf;
     if (argc < 2) {
         LOG_TRACE(LOG_ERROR, "No Files Were Passed\n");
         return 1;
     }
-    FILE *inpf = fopen(argv[1],"r");
-    parse_file(inpf,FIRST_PASS);
-         /* helper method, wont go into the actual code */
-    parse_file(inpf,SECOND_PASS);
-    test("complete",argv[1],"secondpass");
+    for(i = 1; i < argc; i++) {
+        strcat(strcpy(fileName,argv[i]),IN_POSTFIX);        /* copies file name with the input postfix(".as") */
+        if((inpf = fopen(fileName, "r")) == NULL)
+            continue;
+        if(parse_file(inpf, FIRST_PASS) != NO_ERR_OCCURRED)
+            continue;
+        if(parse_file(inpf, SECOND_PASS) != NO_ERR_OCCURRED)
+            continue;
+        fclose(inpf);
+        export_assembly_files(strcpy(fileName,argv[i]));
 
-//    rewind(inpf);
-//    do {
-//        str = getword(inpf);
-//        if (str[0] != EOF)
-//            printf("%s\n", str);
-//    } while (str[0] != EOF);
+        test("complete", argv[1], "secondpass");
+
+    }
 
     return 0;
 }

@@ -13,11 +13,11 @@
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 
-#define NEW_SYMTABLE_NODE(lab,add,position,isentry,iscmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
+#define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
                                                 strcpy(node->label,(lab));\
                                                 node->address = (add);\
                                                 node->position = (position);\
-                                                node->isentry = (isentry);\
+                                                node->format = (format);\
                                                 node->iscmd = (iscmd);\
                                                 node-> right = node->left = NULL;\
 
@@ -31,7 +31,7 @@ typedef struct symbolTable{
     char label[MAX_LINE];
     int address;
     int position;
-    int isentry: 2;
+    int format;
     int iscmd;
     struct symbolTable *left;
     struct symbolTable *right;
@@ -61,7 +61,12 @@ struct COMMAND{
 };
 
 #define STARTING_ADD 100
+#define OUT_EXT ".ext"
+#define OUT_ENT ".ent"
+#define OUT_OB ".ob"
+#define IN_POSTFIX ".as"
 
+#define MAX_FILE_NAME 256
 
 symbolTable *symlloc(void);
 
@@ -89,4 +94,11 @@ int exist_label(char *label);
 void test(const char *lvl,char *filename,char *pass);
 
 void set_offset(void);
+
+void create_ob_file(char *outf);
+
+void create_ent_file(char *outf);
+
+void create_ext_file(char *outf);
+
 #endif //ENDPROJECT_DATA_STRUCT_H

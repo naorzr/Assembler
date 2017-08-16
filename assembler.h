@@ -12,5 +12,6 @@ enum{FIRST_PASS, SECOND_PASS};
 
 enum ErrorTypes parse_file(FILE *inpf,int passage);
 
+void export_assembly_files(char *outName);
 
 #endif //ENDPROJECT_ASSEMBLER_H

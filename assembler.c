@@ -86,7 +86,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
             strcpy(label, word);
             if(flag.label == TRUE && passage == FIRST_PASS)
                 if(strcmp(directive,"extern") == 0)
-                    error = updateSymbolTable(label, EXTERNAL_ADDRESS, ABSOLUTE, NONE_ENTRY,NOT_CMD2);
+                    error = updateSymbolTable(label, EXTERNAL_ADDRESS, ABSOLUTE, EXTERNAL,NOT_CMD2);
                 else
                     error = updateSymbolTable(label,dc,RELOCATABLE,ENTRY,NOT_CMD2);
         }
@@ -116,6 +116,11 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
               op1, op2);
 
     return error;
+
+}
+
+void export_assembly_files(char *outName){
+    create_ob_file(outName);
 
 }
 

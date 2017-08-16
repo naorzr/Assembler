@@ -63,9 +63,9 @@ symbolTable *fetch_label_symtable(){
 }
 
 
-enum ErrorTypes updateSymbolTable(char *label,int address,int position,int isentry,int iscmd){
+enum ErrorTypes updateSymbolTable(char *label,int address,int position,int format,int iscmd){
     symbolTable *node;
-    node = NEW_SYMTABLE_NODE(label,address,position,isentry,iscmd)
+    node = NEW_SYMTABLE_NODE(label,address,position,format,iscmd)
 
     if(symbolTab_head == NULL) {
         symbolTab_tail = symbolTab_head = node;
@@ -80,7 +80,7 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int isent
         else if (strcmp(symbolTab_tail->label, node->label) < 0) {
             if (symbolTab_tail->left == NULL) {
                 symbolTab_tail->left = node;
-                if(isentry)
+                if(format)
                     dc++;
                 return NO_ERR_OCCURRED;
             } else
@@ -88,7 +88,7 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int isent
         } else {
             if (symbolTab_tail->right == NULL) {
                 symbolTab_tail->right = node;
-                if(isentry)
+                if(format)
                     dc++;
                 return NO_ERR_OCCURRED;
             } else
@@ -285,7 +285,7 @@ void test(const char *lvl,char *filename,char *pass){
     struct {
         unsigned tf: 2;
     }flag = {TRUE};
-    testfile = fopen(strcat(strcat(filename,".test."),pass),"r");
+    testfile = fopen(strcat(strcat(filename,".as.test."),pass),"r");
     if(testfile == NULL)
         exit(EXIT_FAILURE);
     if((strcmp(lvl,"code") == 0)|| strcmp(lvl,"complete") == 0){
@@ -369,4 +369,39 @@ void free_symbtable(void){
     free_symtree(symbolTab_head);
     symbolTab_tail = symbolTab_head = NULL;
 }
+
+void create_ob_file(char *fileName){
+    FILE *outf;
+    if((outf = fopen(strcat(fileName,OUT_OB),"w")) == NULL)
+    {
+        fprintf(stderr,"Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(outf);
+}
+
+void create_ext_file(char *fileName){
+    FILE *outf;
+    char outFileName[MAX_FILE_NAME];
+    if((outf = fopen(strcat(fileName,OUT_EXT),"w")) == NULL)
+    {
+        fprintf(stderr,"Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(outf);
+}
+
+void create_ent_file(char *fileName){
+    FILE *outf;
+    if((outf = fopen(strcat(fileName,OUT_ENT),"w")) == NULL)
+    {
+        fprintf(stderr,"Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(outf);
+}
+
 
