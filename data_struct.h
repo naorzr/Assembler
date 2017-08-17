@@ -12,6 +12,8 @@
 #define NUM_OF_CMDS 16
 #define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
+#define WORD_LEN 5
+#define ADDRESS_LEN 4
 
 #define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
                                                 strcpy(node->label,(lab));\

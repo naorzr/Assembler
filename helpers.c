@@ -17,11 +17,11 @@ char* reverse(char* s)
     }
     return s;
 }
-void binToWierdFour(unsigned int bin,char *fourBaseWord){
+void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
     unsigned mask = 3;
     int i = 0;
     char *head = fourBaseWord;
-    for(mask = 3;i < 5;i++,bin>>=2,fourBaseWord++)
+    for(mask = 3;i < nmems;i++,bin>>=2,fourBaseWord++)
         switch(mask&bin){
             case 0:
                 *fourBaseWord = 'a';
@@ -47,6 +47,7 @@ void *safe_malloc(int nmemb,size_t size){
         fprintf(stderr,"Could not allocate memory");
         exit(EXIT_FAILURE);
     }
+
 
     return ptr;
 }

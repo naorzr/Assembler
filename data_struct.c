@@ -7,6 +7,7 @@
 #include "data_struct.h"
 #include "error_handler.h"
 #include "content_validation.h"
+#include "helpers.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -43,11 +44,15 @@ static dataCounter *data_counter = NULL;
 
 static int dc = STARTING_ADD;
 static int ic = STARTING_ADD;
+static int extref_ind = 0;
 static int offset = 0;
 
 static unsigned code[MAX_FILE_SIZE] = {0};
 static unsigned data[MAX_FILE_SIZE] = {0};
-
+static struct{
+    const char * label;
+    unsigned int address;
+} extref[MAX_FILE_SIZE] = {0};
 
 symbolTable *fetch_label_symtable(){
 
@@ -68,6 +73,7 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int forma
     LOOP {
         if (strcmp(symbolTab_tail->label, node->label) == 0) {
             if(format == ENTRY) {
+                symbolTab_tail->format = ENTRY;
                 symbolTab_tail->position |= position;
                 return NO_ERR_OCCURRED;
             }
@@ -165,6 +171,11 @@ symbolTable *get_symbolId(char *label){
 }
 
 int symbToBin(symbolTable *symb){
+    if(symb->position == EXTERNAL) {
+        extref[extref_ind].address = ic+1;
+        extref[extref_ind].label = symb->label;
+        extref_ind++;
+    }
     return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
 }
 
@@ -270,10 +281,14 @@ int exist_label(char *label){
     return FALSE;
 }
 
-void test(const char *lvl,char *filename,char *pass){
-    int i,k;
+void test(const char *lvl,char *filename1,char *pass){
+    int i,k,j = 0;
     unsigned mask =  1;
-    FILE *testfile;
+    char filename[20000] ="";
+    char s1[10000],s2[10000];
+    FILE *testfile,*testob2;
+    FILE *testob1;
+    strcpy(filename,filename1);
     char line[MAX_LINE];
     struct {
         unsigned tf: 2;
@@ -335,6 +350,28 @@ void test(const char *lvl,char *filename,char *pass){
 
         }
     }
+    *strchr(filename,'.') = '\0';
+    testob1 = fopen(strcat(filename,".ob"),"r");
+    testob2 = fopen(strcat(filename,".test"),"r");
+    j = STARTING_ADD;
+    if(testob1 == NULL || testob2 == NULL)
+        exit(1);
+    printf("\n****************************************************\n\nComparing Ob Files:\n\n");
+    while(fgets(s1,100,testob1) && fgets(s2,100,testob2)){\
+        if(strchr(s1,'\n'))
+            *strchr(s1, '\n') = '\0';
+        if(strchr(s2,'\n'))
+            *strchr(s2, '\n') = '\0';
+
+        printf("%d: (%s)\t(%s)\t",j,s1,s2);
+        if(strcmp(s1,s2) != 0)
+            printf("** No Match **\n");
+        else
+            printf("**  MATCH  **\n");
+
+        j++;
+    }
+
     printf("\n");
 }
 
@@ -365,34 +402,74 @@ void free_symbtable(void){
 
 void create_ob_file(char *fileName){
     FILE *outf;
-    if((outf = fopen(strcat(fileName,OUT_OB),"w")) == NULL)
+    char outFileName[FILENAME_MAX];
+    char word[WORD_LEN + 1];
+    char address[ADDRESS_LEN + 1];
+    strcpy(outFileName,fileName);
+    int i;
+    if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
     {
         fprintf(stderr,"Could not write to %s","%s");
         exit(EXIT_FAILURE);
+    }
+    for(i = STARTING_ADD;i<ic;i++){
+        binToWierdFour(i,address,ADDRESS_LEN);
+        fprintf(outf,"%.4s\t",address);
+        binToWierdFour(code[i],word,WORD_LEN);
+        fprintf(outf,"%.5s\n",word);
+    }
+    for(i = STARTING_ADD;i<dc;i++){
+        binToWierdFour(i+offset,address,ADDRESS_LEN);
+        fprintf(outf,"%.4s\t",address);
+        binToWierdFour(data[i],word,WORD_LEN);
+        fprintf(outf,"%.5s\n",word);
     }
 
     fclose(outf);
 }
 
 void create_ext_file(char *fileName){
+    int i = 0;
     FILE *outf;
     char outFileName[MAX_FILE_NAME];
-    if((outf = fopen(strcat(fileName,OUT_EXT),"w")) == NULL)
+    char address[ADDRESS_LEN + 1];
+    strcpy(outFileName,fileName);
+    if((outf = fopen(strcat(outFileName,OUT_EXT),"w")) == NULL)
     {
         fprintf(stderr,"Could not write to %s","%s");
         exit(EXIT_FAILURE);
     }
-
+    for(i = 0;i<extref_ind;i++) {
+        binToWierdFour(extref[i].address,address,ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", extref[i].label, address);
+    }
     fclose(outf);
+}
+
+void print_ent(FILE *outf,symbolTable *symnode){
+    static char address[ADDRESS_LEN+1];
+    if(symnode == NULL)
+        return;
+    else if(symnode->format == ENTRY) {
+        binToWierdFour(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE?offset:0),address,ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", symnode->label,address);
+    }
+    print_ent(outf,symnode->right);
+    print_ent(outf,symnode->left);
+
 }
 
 void create_ent_file(char *fileName){
     FILE *outf;
-    if((outf = fopen(strcat(fileName,OUT_ENT),"w")) == NULL)
+    char outFileName[MAX_FILE_NAME];
+    strcpy(outFileName,fileName);
+    if((outf = fopen(strcat(outFileName,OUT_ENT),"w")) == NULL)
     {
         fprintf(stderr,"Could not write to %s","%s");
         exit(EXIT_FAILURE);
     }
+
+    print_ent(outf,symbolTab_head);
 
     fclose(outf);
 }

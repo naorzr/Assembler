@@ -88,7 +88,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
                 error = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
 
         } else if (Is_Entry(directive)) {
-            if ((word = safe_strtok(NULL, "")) == NULL)
+            if ((word = safe_strtok(NULL, "")) == NULL || !is_label(word))
                 return ERR_EXPECTED_LABEL;
             strcpy(label, word);
             if(passage == SECOND_PASS)
@@ -126,7 +126,8 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
 
 void export_assembly_files(char *outName){
     create_ob_file(outName);
-
+    create_ext_file(outName);
+    create_ent_file(outName);
 }
 
 /* get_line_content: handles each line of the given file

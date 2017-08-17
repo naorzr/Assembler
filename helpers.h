@@ -26,6 +26,6 @@ char *safe_strtok(char *str,char *delim);
 void *safe_malloc(int nmemb,size_t size);
 
 
-void binToWierdFour(unsigned int bin,char *fourBaseWord);
+void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems);
 
 #endif //ENDPROJECT_HELPERS_H

@@ -45,8 +45,7 @@ int main(int argc, char **argv) {
         export_assembly_files(strcpy(fileName,argv[i]));
 
         test("complete", argv[1], "secondpass");
-
     }
-
+    printf("Program Ended\n");
     return 0;
 }
