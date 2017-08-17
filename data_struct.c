@@ -281,97 +281,46 @@ int exist_label(char *label){
     return FALSE;
 }
 
-void test(const char *lvl,char *filename1,char *pass){
-    int i,k,j = 0;
-    unsigned mask =  1;
+/* to use the tester, create 3 files that should be tested against. with a postfix of .test
+         * for example filename.as.test or filename.ent.test */
+void test(char *filename1){
+    int i = 3,j = 0;
+    char str[10];
     char filename[20000] ="";
     char s1[10000],s2[10000];
-    FILE *testfile,*testob2;
-    FILE *testob1;
-    strcpy(filename,filename1);
-    char line[MAX_LINE];
-    struct {
-        unsigned tf: 2;
-    }flag = {TRUE};
-    testfile = fopen(strcat(strcat(filename,".as.test."),pass),"r");
-    if(testfile == NULL)
-        exit(EXIT_FAILURE);
-    if((strcmp(lvl,"code") == 0)|| strcmp(lvl,"complete") == 0){
-    printf("\n****************************************************\n\nCode counter:\n");
-    for(i = STARTING_ADD;i<ic;i++){
-        flag.tf = TRUE;
-        fgets(line,MAX_LINE,testfile);
-        printf("%3d: ",i);
-        for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
-            if(line[k] == '-')
-                k++;
-            if((mask&code[i]?1:0) != (line[k] - '0'))
-                flag.tf = FALSE;
-            printf("%d", mask & code[i]? 1: 0);
-            if(mask == 64 || mask == 4)
-                printf("-");
-        }
-        if(strchr(line,'\n'))
-            line[strchr(line,'\n')-line] = '\0';
+    FILE *testob1,*testob2;
 
-        printf("  %s",line);
-        if(flag.tf == FALSE)
-            printf("\t\t ** No Match **");
-        else
-            printf("\t\t **  Match   **");
-        printf("\n");
+    while(i) {
+        strcpy(filename, filename1);
+        if(i == 3)
+            strcpy(str,".ob");
+        if(i == 2)
+            strcpy(str,".ent");
+        if(i == 1)
+            strcpy(str,".ext");
+        testob1 = fopen(strcat(filename, str), "r");
+        testob2 = fopen(strcat(filename, ".test"), "r");
+        j = STARTING_ADD;
+        if (testob1 == NULL || testob2 == NULL)
+            exit(1);
+        printf("\n****************************************************\n\nComparing %s Files:\n\n",&str[1]);
+        while (fgets(s1, 100, testob1) && fgets(s2, 100, testob2)) {
+            \
+        if (strchr(s1, '\n'))
+                *strchr(s1, '\n') = '\0';
+            if (strchr(s2, '\n'))
+                *strchr(s2, '\n') = '\0';
 
-    }
-    }
-    if((strcmp(lvl,"data") == 0) || strcmp(lvl,"complete") == 0) {
-        printf("\n****************************************************\n\nData counter:\n");
-        for(i = STARTING_ADD;i<dc;i++){
-            flag.tf = TRUE;
-            fgets(line,MAX_LINE,testfile);
-            printf("%3d: ",i+ic);
-            for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
-                if(line[k] == '-')
-                    k++;
-                if((mask&data[i]?1:0) != (line[k] - '0'))
-                    flag.tf = FALSE;
-                printf("%d", mask & data[i]? 1: 0);
-                if(mask == 64 || mask == 4)
-                    printf("-");
-            }
-            if(strchr(line,'\n'))
-                line[strchr(line,'\n')-line] = '\0';
-
-            printf("  %s",line);
-            if(flag.tf == FALSE)
-                printf("\t\t ** No Match **");
+            printf("%d: (%s)\t(%s)\t", j, s1, s2);
+            if (strcmp(s1, s2) != 0)
+                printf("** No Match **\n");
             else
-                printf("\t\t **  Match   **");
-            printf("\n");
+                printf("**  MATCH  **\n");
 
+            j++;
         }
+        i--;
     }
-    *strchr(filename,'.') = '\0';
-    testob1 = fopen(strcat(filename,".ob"),"r");
-    testob2 = fopen(strcat(filename,".test"),"r");
-    j = STARTING_ADD;
-    if(testob1 == NULL || testob2 == NULL)
-        exit(1);
-    printf("\n****************************************************\n\nComparing Ob Files:\n\n");
-    while(fgets(s1,100,testob1) && fgets(s2,100,testob2)){\
-        if(strchr(s1,'\n'))
-            *strchr(s1, '\n') = '\0';
-        if(strchr(s2,'\n'))
-            *strchr(s2, '\n') = '\0';
-
-        printf("%d: (%s)\t(%s)\t",j,s1,s2);
-        if(strcmp(s1,s2) != 0)
-            printf("** No Match **\n");
-        else
-            printf("**  MATCH  **\n");
-
-        j++;
-    }
-
     printf("\n");
 }
 
@@ -474,4 +423,63 @@ void create_ent_file(char *fileName){
     fclose(outf);
 }
 
+/*
+   testfile = fopen(strcat(strcat(filename,".as.test."),pass),"r");
+   if(testfile == NULL)
+       exit(EXIT_FAILURE);
+   if((strcmp(lvl,"code") == 0)|| strcmp(lvl,"complete") == 0){
+   printf("\n****************************************************\n\nCode counter:\n");
+   for(i = STARTING_ADD;i<ic;i++){
+       flag.tf = TRUE;
+       fgets(line,MAX_LINE,testfile);
+       printf("%3d: ",i);
+       for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
+           if(line[k] == '-')
+               k++;
+           if((mask&code[i]?1:0) != (line[k] - '0'))
+               flag.tf = FALSE;
+           printf("%d", mask & code[i]? 1: 0);
+           if(mask == 64 || mask == 4)
+               printf("-");
+       }
+       if(strchr(line,'\n'))
+           line[strchr(line,'\n')-line] = '\0';
 
+       printf("  %s",line);
+       if(flag.tf == FALSE)
+           printf("\t\t ** No Match **");
+       else
+           printf("\t\t **  Match   **");
+       printf("\n");
+
+   }
+   }
+   if((strcmp(lvl,"data") == 0) || strcmp(lvl,"complete") == 0) {
+       printf("\n****************************************************\n\nData counter:\n");
+       for(i = STARTING_ADD;i<dc;i++){
+           flag.tf = TRUE;
+           fgets(line,MAX_LINE,testfile);
+           printf("%3d: ",i+ic);
+           for(mask = 1,k = 0,mask <<= 9;mask;mask>>= 1,k++) {
+               if(line[k] == '-')
+                   k++;
+               if((mask&data[i]?1:0) != (line[k] - '0'))
+                   flag.tf = FALSE;
+               printf("%d", mask & data[i]? 1: 0);
+               if(mask == 64 || mask == 4)
+                   printf("-");
+           }
+           if(strchr(line,'\n'))
+               line[strchr(line,'\n')-line] = '\0';
+
+           printf("  %s",line);
+           if(flag.tf == FALSE)
+               printf("\t\t ** No Match **");
+           else
+               printf("\t\t **  Match   **");
+           printf("\n");
+
+       }
+   }
+   *strchr(filename,'.') = '\0';
+    * */

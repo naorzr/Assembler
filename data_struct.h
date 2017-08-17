@@ -40,7 +40,7 @@ typedef struct symbolTable{
 }symbolTable;
 
 typedef struct dataCounter{
-    unsigned memWord: 10;
+    unsigned memWord;
 }dataCounter;
 
 struct COMMAND{
@@ -93,7 +93,7 @@ int getIc(void);
 
 int exist_label(char *label);
 
-void test(const char *lvl,char *filename,char *pass);
+void test(char *filename);
 
 void set_offset(void);
 

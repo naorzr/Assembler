@@ -43,8 +43,9 @@ int main(int argc, char **argv) {
             continue;
         fclose(inpf);
         export_assembly_files(strcpy(fileName,argv[i]));
-
-        test("complete", argv[1], "secondpass");
+        /* to use the tester, create 3 files that should be tested against. with a postfix of .test
+         * for example filename.as.test or filename.ent.test */
+        test(argv[1]);
     }
     printf("Program Ended\n");
     return 0;
