@@ -6,7 +6,6 @@
 #include "content_validation.h"
 #include "data_struct.h"
 #include "error_handler.h"
-#include "content_validation.h"
 #include "helpers.h"
 
 #include <string.h>
@@ -358,7 +357,7 @@ void create_ob_file(char *fileName){
     int i;
     if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
     {
-        fprintf(stderr,"Could not write to %s","%s");
+        fprintf(stderr, "Could not write to %s","%s");
         exit(EXIT_FAILURE);
     }
     for(i = STARTING_ADD;i<ic;i++){

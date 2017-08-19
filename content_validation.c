@@ -162,25 +162,24 @@ int isValidMat(char *str) {
                 (isNum(arg2) || isReg(arg2));
 
 
-
 }
 
 
-int getAddMode(char *op){
-    if(strcmp(op,"") == 0)
+int getAddMode(char *op) {
+    if (strcmp(op, "") == 0)
         return ADDMODE_NO_OPERAND;
-    else if(op[0] == '#')
+    else if (op[0] == '#')
         return ADDMODE_IMMEDIATE;
-    else if(is_label(op))
+    else if (is_label(op))
         return ADDMODE_DIRECT;
-    else if(isReg(op))
+    else if (isReg(op))
         return ADDMODE_REG;
     else {
-        char arg1[MAX_LINE],arg2[MAX_LINE],label[MAX_LINE];
+        char label[MAX_LINE] = "";
         char *str;
-        str = strchr(op,'[');
-        strncpy(label,op,str-op);
-        if(!is_label(label)|| !isValidMat(str))
+        str = strchr(op, '[');
+        strncpy(label, op, str - op);
+        if (!is_label(label) || !isValidMat(str))
             return ADDMODE_INVALID;
         return ADDMODE_MATRIX;
     }

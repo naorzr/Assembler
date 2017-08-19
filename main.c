@@ -1,9 +1,6 @@
-#include <ctype.h>
-
 #include "logger.h"
 #include "assembler.h"
 #include "data_struct.h"
-#include "content_validation.h"
 #include "error_handler.h"
 
 int main(int argc, char **argv) {
@@ -20,13 +17,12 @@ int main(int argc, char **argv) {
             LOG_TRACE(LOG_ERROR, "Error reading file: %s\n", fileName);
             continue;
         }
-
         if (parse_file(inpf, FIRST_PASS) != NO_ERR_OCCURRED) {
-            LOG_TRACE(LOG_ERROR, "Errors found during the first pass phase of file name: %s, skipping to next file\n", fileName);
+            LOG_TRACE(LOG_ERROR, "Errors found during the first pass phase of file name: %s, skipping to the next file\n", fileName);
             continue;
         }
         if (parse_file(inpf, SECOND_PASS) != NO_ERR_OCCURRED) {
-            LOG_TRACE(LOG_ERROR, "Errors found during the second pass phase of file name: %s, skipping to next file\n", fileName);
+            LOG_TRACE(LOG_ERROR, "Errors found during the second pass phase of file name: %s, skipping to the next file\n", fileName);
             continue;
         }
         fclose(inpf);

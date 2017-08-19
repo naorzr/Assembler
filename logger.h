@@ -11,6 +11,6 @@ typedef enum
     LOG_DEBUG
 } LOG_LEVEL;
 
-#define SELECTED_LOG_LEVEL LOG_DEBUG
+#define SELECTED_LOG_LEVEL LOG_INFO
 
 void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ... );

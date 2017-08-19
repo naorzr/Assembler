@@ -46,7 +46,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
     unsigned dc,ic;
     char label[MAX_LINE] = "",cmd[MAX_LINE] = "",directive[MAX_LINE] = "",op1[MAX_LINE] = "",op2[MAX_LINE] = "";
     char *word;
-    enum ErrorTypes error = NO_ERR_OCCURRED;
+    enum ErrorTypes errCode = NO_ERR_OCCURRED;
     const char comma[] = " ,\t";
     struct {
         unsigned label: 2;
@@ -73,7 +73,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         if (is_dsm(directive)) {      /* case it's a .data/.string/.mat directive */
             if (is_dsm(directive)) {
                 if (flag.label && passage == FIRST_PASS)
-                    error = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
+                    errCode = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
                 if (word = safe_strtok(NULL, "")) {
 
                 }
@@ -85,14 +85,14 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
                 return ERR_EXPECTED_LABEL;
             strcpy(label, word);
             if(passage == FIRST_PASS)
-                error = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
+                errCode = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
 
         } else if (Is_Entry(directive)) {
             if ((word = safe_strtok(NULL, "")) == NULL || !is_label(word))
                 return ERR_EXPECTED_LABEL;
             strcpy(label, word);
             if(passage == SECOND_PASS)
-                error = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
+                errCode = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
 
         }
     }
@@ -100,7 +100,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         strcpy(cmd, word);
 
         if(flag.label == TRUE && passage == FIRST_PASS)
-            error = updateSymbolTable(label,ic,RELOCATABLE,NONE_ENTRY,CMD2);
+            errCode = updateSymbolTable(label,ic,RELOCATABLE,NONE_ENTRY,CMD2);
 
         if (word = safe_strtok(NULL, comma))
             strcpy(op1, word);
@@ -120,7 +120,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
               lineContent==NULL?"":lineContent, label, cmd, directive,
               op1, op2);
 
-    return error;
+    return errCode;
 
 }
 
