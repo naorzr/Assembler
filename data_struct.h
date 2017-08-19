@@ -66,7 +66,7 @@ struct COMMAND{
 #define OUT_EXT ".ext"
 #define OUT_ENT ".ent"
 #define OUT_OB ".ob"
-#define IN_POSTFIX ".as"
+#define AS_EXT ".as"
 
 #define MAX_FILE_NAME 256
 
