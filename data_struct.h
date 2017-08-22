@@ -79,7 +79,7 @@ void updateData(char *directive,char *op2);
 void updateIcCounter(char *op1,char *op2,int *ic);
 
 
-err_t updateIc(char *cmd,char *op1,char *op2,int state);
+enum ErrorTypes updateIc(char *cmd,char *op1,char *op2,int state);
 
 void clear_data_stacks(void);
 

@@ -1,8 +1,20 @@
+/*
+ * Maman14: This is an assembly program for assembly files
+ * @authors:
+ * Barak Kinarti
+ * Naor Zruk
+ */
 #include "logger.h"
 #include "assembler.h"
 #include "data_struct.h"
 #include "error_handler.h"
 
+/**
+ * Gets command line arguments with the assembly file names and interpret them one by one
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char **argv) {
     char fileName[MAX_FILE_NAME];
     int i = 0;

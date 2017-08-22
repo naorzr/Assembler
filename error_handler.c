@@ -1,7 +1,3 @@
-//
-// Created by naortif on 8/9/17.
-//
-
 #include <string.h>
 #include "error_handler.h"
 #include "logger.h"
@@ -12,7 +8,7 @@
  * @param lineNum Line Number
  * @param line Line Content
  */
-void update_err_log(enum ErrorTypes err, int lineNum, char *line){
+void print_error(enum ErrorTypes err, int lineNum, char *line){
     char errTemplate[] = "Error: %s in line number %d, line content: %s\n";
     char errMsg[100];
 
@@ -37,6 +33,12 @@ void update_err_log(enum ErrorTypes err, int lineNum, char *line){
             break;
         case ERR_LABEL_REDECLARED:
             strcpy(errMsg, "Duplicate label declaration");
+            break;
+        case E_INVALID_SRCOP_ADDMODE:
+            strcpy(errMsg, "Invalid Source Operand");
+            break;
+        case E_INVALID_DESTOP_ADDMODE:
+            strcpy(errMsg, "Invalid Destination Operand");
             break;
         default:
             strcpy(errMsg, "General error occurred");

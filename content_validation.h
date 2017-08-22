@@ -22,17 +22,16 @@ typedef enum {
 #define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
 #define IS_DIRECTIVE(word)     (word)[0] == '.'
 
-typedef enum err_t{
-    E_SUCCESS = 1,
-    E_LABEL_REDEC,    /* label redeclaration */
-    E_INVALID_LABEL,
-    E_INVALID_SRC_OP,
-    E_INVALID_DEST_OP,
-    E_INVALID_SRCOP_ADDMODE,
-    E_INVALID_DESTOP_ADDMODE,
-
-}err_t;
-void printerr(char *lineContent,char *str,int lineNumber);
+//typedef enum err_t{
+//    E_SUCCESS = 1,
+//    E_LABEL_REDEC,    /* label redeclaration */
+//    E_INVALID_LABEL,
+//    E_INVALID_SRC_OP,
+//    E_INVALID_DEST_OP,
+//    E_INVALID_SRCOP_ADDMODE,
+//    E_INVALID_DESTOP_ADDMODE,
+//
+//}err_t;
 
 int isReg(char *word);
 
@@ -46,15 +45,13 @@ int isString(char *str);
 
 int isNum(char *str);
 
-int isValidMatVal(char *val);
-
 int cpyMatVals(const char *mat,char *arg1,char *arg2);
 
 int isValidMat(char *str);
 
 int getAddMode(char *op);
 
-err_t isValidAddressMode(char *cmd,AddressMode src_op, AddressMode dest_op);
+enum ErrorTypes isValidAddressMode(char *cmd,AddressMode src_op, AddressMode dest_op);
 
 int validMatInitializer(const char *mat);
 

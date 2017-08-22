@@ -1,21 +1,10 @@
-//
-// Created by naortif on 7/24/17.
-//
 #include <string.h>
 #include <ctype.h>
-
 #include "content_validation.h"
 #include "assembler.h"
 #include "data_struct.h"
 #include "helpers.h"
-
-
-
-void printerr(char *lineContent,char *str,int lineNum){
-
-    fprintf(stderr,"Error has occurred at line %d, Please examine:\n%s\n",lineNum,str);
-
-}
+#include "error_handler.h"
 
 int is_label(char *label){
     int i,slen;
@@ -83,36 +72,30 @@ int isReg(char *op){
     return FALSE;
 }
 
-int cpyMatVals(const char *mat,char *arg1,char *arg2){
-    char *op1,*op2;
+int cpyMatVals(const char *mat, char *arg1, char *arg2) {
+    char *op1, *op2;
     int i;
-    char temp_mat[MAX_LINE];
-    strcpy(temp_mat,mat);
+    char temp_mat[MAX_LINE] = "";
+    strcpy(temp_mat, mat);
     /* TODO: fix that skip space with the temp_mat. function not working cause its an array being passed(allocate dynamic memory) */
 
-    op1 = strchr(mat,'[');
-    for(i = 0;i<MAX_LINE && *(++op1) != ']';i++)
-        if(isspace(*op1))
+    op1 = strchr(mat, '[');
+    for (i = 0; i < MAX_LINE && *(++op1) != ']'; i++)
+        if (isspace(*op1))
             continue;
         else
             arg1[i] = *op1;
     arg1[i] = '\0';
 
-    op2 = strchr(op1,'[');
-    for(i = 0;i<MAX_LINE && *(++op2) != ']';i++)
-        if(isspace(*op2))
+    op2 = strchr(op1, '[');
+    for (i = 0; i < MAX_LINE && *(++op2) != ']'; i++)
+        if (isspace(*op2))
             continue;
         else
             arg2[i] = *op2;
     arg2[i] = '\0';
 
     return TRUE;
-}
-
-int isValidMatVal(char *val){
-    if(isNum(val) || isReg(val))
-        return TRUE;
-    return FALSE;
 }
 
 int validMatInitializer(const char *mat){
@@ -154,16 +137,19 @@ int valid_parentheses(char *str){
     return FALSE;
 }
 
+/**
+ * Checks matrix arguments validity
+ * @param str matrix string
+ * @return
+ */
 int isValidMat(char *str) {
-    char arg1[MAX_LINE], arg2[MAX_LINE];
+    char arg1[MAX_LINE] = "", arg2[MAX_LINE] = "";
 
     if (cpyMatVals(str, arg1, arg2) == TRUE)
-        return (isNum(arg1)||isReg(arg1)) &&
-                (isNum(arg2) || isReg(arg2));
-
+        return (isNum(arg1) || isReg(arg1)) &&
+               (isNum(arg2) || isReg(arg2));
 
 }
-
 
 int getAddMode(char *op) {
     if (strcmp(op, "") == 0)
@@ -186,33 +172,33 @@ int getAddMode(char *op) {
 }
 
 
-err_t isValidAddressMode(char *cmd, AddressMode src_op,AddressMode dest_op){
+enum ErrorTypes isValidAddressMode(char *cmd, AddressMode src_op, AddressMode dest_op) {
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     int i = 0;
 
-    for(i = 0;i<NUM_OF_CMDS;i++){
-        if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
-            switch(src_op){
+    for (i = 0; i < NUM_OF_CMDS; i++) {
+        if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
+            switch (src_op) {
                 case ADDMODE_DIRECT:
-                    if(COMMANDS[i].addressingMode_op1.direct == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    if (COMMANDS[i].addressingMode_op1.direct == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
                 case ADDMODE_IMMEDIATE:
-                    if(COMMANDS[i].addressingMode_op1.immediate == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    if (COMMANDS[i].addressingMode_op1.immediate == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
                 case ADDMODE_MATRIX:
-                    if(COMMANDS[i].addressingMode_op1.matrix == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    if (COMMANDS[i].addressingMode_op1.matrix == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
                 case ADDMODE_REG:
-                    if(COMMANDS[i].addressingMode_op1.reg == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    if (COMMANDS[i].addressingMode_op1.reg == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
                 case ADDMODE_NO_OPERAND:
-                    if(COMMANDS[i].addressingMode_op1.noOperand == OFF) return E_INVALID_SRCOP_ADDMODE;
+                    if (COMMANDS[i].addressingMode_op1.noOperand == OFF) return E_INVALID_SRCOP_ADDMODE;
                     break;
                 default:
                     return E_INVALID_SRCOP_ADDMODE;
             }
 
-            switch(dest_op){
+            switch (dest_op) {
                 case ADDMODE_DIRECT:
                     if (COMMANDS[i].addressingMode_op2.direct == OFF) return E_INVALID_DESTOP_ADDMODE;
                     break;
@@ -231,7 +217,7 @@ err_t isValidAddressMode(char *cmd, AddressMode src_op,AddressMode dest_op){
                 default:
                     return E_INVALID_DESTOP_ADDMODE;
             }
-            return E_SUCCESS;
+            return NO_ERR_OCCURRED;
         }
     }
     return FALSE;

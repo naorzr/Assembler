@@ -3,14 +3,15 @@
 //
 
 
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
+
 #include "content_validation.h"
 #include "data_struct.h"
 #include "error_handler.h"
 #include "helpers.h"
-
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include "error_handler.h"
 
 const struct COMMAND const COMMANDS[] = {
                                          {"mov",0,{0,1,1,1,1},{0,0,1,1,1}},
@@ -232,8 +233,8 @@ void set_offset(void){
     offset = ic-STARTING_ADD;
 }
 
-err_t updateIc(char *cmd,char *src_op,char *dest_op,int passage){
-    err_t state;
+enum ErrorTypes updateIc(char *cmd,char *src_op,char *dest_op,int passage){
+    enum ErrorTypes state;
     int word, i;
     /* will be the matrix argument if needed */
     char *str;
@@ -242,7 +243,7 @@ err_t updateIc(char *cmd,char *src_op,char *dest_op,int passage){
     destop_mode = getAddMode(dest_op);
     srcop_mode = getAddMode(src_op);
 
-    if((state = isValidAddressMode(cmd,srcop_mode,destop_mode)) != E_SUCCESS)
+    if((state = isValidAddressMode(cmd,srcop_mode,destop_mode)) != NO_ERR_OCCURRED)
         return state;
 
     for(i = 0;i < NUM_OF_CMDS;i++){
@@ -251,14 +252,14 @@ err_t updateIc(char *cmd,char *src_op,char *dest_op,int passage){
             break;
         }
     }
-    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND?0:srcop_mode)<<4;
-    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND?0:destop_mode)<<2;
+    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : srcop_mode) << 4;
+    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : destop_mode) << 2;
 
-    strToBinWord(src_op,srcop_mode,SRC_OP,passage);
-    strToBinWord(dest_op,destop_mode,DEST_OP,passage);
+    strToBinWord(src_op, srcop_mode, SRC_OP, passage);
+    strToBinWord(dest_op, destop_mode, DEST_OP, passage);
 
     ic++;
-    return E_SUCCESS;
+    return NO_ERR_OCCURRED;
 }
 
 
