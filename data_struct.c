@@ -11,6 +11,8 @@
 #include "data_struct.h"
 #include "error_handler.h"
 #include "helpers.h"
+#include "error_handler.h"
+#include "logger.h"
 
 const struct COMMAND const COMMANDS[] = {
                                          {"mov",0,{0,1,1,1,1},{0,0,1,1,1}},
@@ -50,6 +52,13 @@ static struct{
     unsigned int address;
 } extref[MAX_FILE_SIZE] = {0};
 
+/**
+ * Frees the external reference
+ */
+void freeExtRef() {
+    extref_ind = 0;
+    memset(&extref, 0, sizeof(extref));
+}
 
 enum ErrorTypes updateSymbolTable(char *label,int address,int position,int format,int iscmd){
     symbolTable *node;
@@ -89,10 +98,17 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int forma
 
 
 }
-
+/**
+ * Checks if a number is valid (between 511 and -511)
+ * @param num
+ * @return
+ */
+int isValidNumVal(int num) {
+    return num < 512 && num > -512;
+}
 
 /* TODO needs to finish this function */
-void updateData(char *directive,char *op_string){
+enum ErrorTypes updateData(char *directive,char *op_string){
 
     char arg1[MAX_LINE],arg2[MAX_LINE];
     char *param;
@@ -102,20 +118,21 @@ void updateData(char *directive,char *op_string){
 
         do {
             if (param == NULL || !isNum(param)) {
-                printf("Invalid data param");
-                return;
+                return ERR_INV_DATA_PARAM;
             }
             bitword = atoi(param);
+            if (!isValidNumVal(bitword)) {
+                return ERR_INV_DATA_SIZE;
+            }
             if (bitword < 0)
                 bitword = ~(bitword * -1) + 1;
             data[dc++] = bitword;
-        }while (param = strtok(NULL,",NULL"));
+        } while (param = strtok(NULL,",NULL"));
 
     } else if(strcmp(directive,"string") == 0){
         param = strtok(op_string,"");
         if(param == NULL || !isString(param)){
-            printf("Invalid string param");
-            return;
+            return ERR_INV_STRING_PARAM;
         }
         param[strlen(param)-1] = '\0';
         param = &param[1];
@@ -127,8 +144,7 @@ void updateData(char *directive,char *op_string){
     } else if(strcmp(directive,"mat") == 0){
         param = strtok(op_string," ");
         if(!validMatInitializer(param)){
-            printf("Invalid mat initializer");
-            return;
+            return ERR_INV_MAT_INIT;
         }
         cpyMatVals(param,arg1,arg2);
         mat_word_size = atoi(arg1)*atoi(arg2);
@@ -136,10 +152,12 @@ void updateData(char *directive,char *op_string){
         while (param = strtok(NULL,",NULL")){
             mat_word_size--;
             if (!isNum(param)) {
-                printf("Invalid data param");
-                return;
+                return ERR_INV_DATA_PARAM;
             }
             bitword = atoi(param);
+            if (!isValidNumVal(bitword)) {
+                return ERR_INV_MAT_PARAM_SIZE;
+            }
             if (bitword < 0)
                 bitword = ~(bitword * -1) + 1;
             data[dc++] = bitword;
@@ -147,6 +165,7 @@ void updateData(char *directive,char *op_string){
         while(mat_word_size--)
             dc++;
     }
+    return NO_ERR_OCCURRED;
 }
 
 
@@ -255,9 +274,6 @@ enum ErrorTypes updateIc(char *cmd,char *src_op,char *dest_op,int passage){
     return NO_ERR_OCCURRED;
 }
 
-
-
-
 int getIc(void){
     return ic;
 }
@@ -351,7 +367,7 @@ void create_ob_file(char *fileName){
     int i;
     if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
     {
-        fprintf(stderr, "Could not write to %s","%s");
+        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
         exit(EXIT_FAILURE);
     }
     for(i = STARTING_ADD;i<ic;i++){
@@ -407,7 +423,7 @@ void create_ent_file(char *fileName){
     strcpy(outFileName,fileName);
     if((outf = fopen(strcat(outFileName,OUT_ENT),"w")) == NULL)
     {
-        fprintf(stderr,"Could not write to %s","%s");
+        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
         exit(EXIT_FAILURE);
     }
 

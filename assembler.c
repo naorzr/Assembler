@@ -5,7 +5,7 @@
 #include "helpers.h"
 #include "logger.h"
 
-static int lineNum = 0;
+static int lineNum;
 char* get_line_content(FILE *inpf);
 enum ErrorTypes parse_line(char *lineContent,int passage);
 
@@ -24,8 +24,10 @@ enum ErrorTypes parse_file(FILE *inpf, int passage) {
 
     /* clears data/code and symbol table */
     if (passage == FIRST_PASS) {
+        lineNum = 0;
         clear_data_stacks();
         free_symbtable();
+        freeExtRef();
     }
     if (passage == SECOND_PASS) {
         set_offset();
@@ -84,17 +86,17 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
 
                 }
                 strcpy(op1, word);
-                updateData(directive, op1);
+                errCode = updateData(directive, op1);
             }
         } else if (Is_External(directive)) {
-            if ((word = safe_strtok(NULL, "")) == NULL)
+            if ((word = safe_strtok(NULL, " \t")) == NULL)
                 return ERR_EXPECTED_LABEL;
             strcpy(label, word);
             if (passage == FIRST_PASS)
                 errCode = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
 
         } else if (Is_Entry(directive)) {
-            if ((word = safe_strtok(NULL, "")) == NULL || !is_label(word))
+            if ((word = safe_strtok(NULL, " \t")) == NULL || !is_label(word))
                 return ERR_EXPECTED_LABEL;
             strcpy(label, word);
             if (passage == SECOND_PASS)

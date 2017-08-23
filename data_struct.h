@@ -72,10 +72,9 @@ symbolTable *symlloc(void);
 
 enum ErrorTypes updateSymbolTable(char *label,int address,int storageType,int isentry,int iscmd);
 
-void updateData(char *directive,char *op2);
+enum ErrorTypes updateData(char *directive,char *op2);
 
 void updateIcCounter(char *op1,char *op2,int *ic);
-
 
 enum ErrorTypes updateIc(char *cmd,char *op1,char *op2,int state);
 
@@ -100,5 +99,9 @@ void create_ob_file(char *outf);
 void create_ent_file(char *outf);
 
 void create_ext_file(char *outf);
+
+void freeExtRef();
+
+int isValidNumVal(int num);
 
 #endif //ENDPROJECT_DATA_STRUCT_H

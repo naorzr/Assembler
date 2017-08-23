@@ -40,6 +40,21 @@ void print_error(enum ErrorTypes err, int lineNum, char *line){
         case E_INVALID_DESTOP_ADDMODE:
             strcpy(errMsg, "Invalid Destination Operand");
             break;
+        case ERR_INV_DATA_PARAM:
+            strcpy(errMsg, "Invalid data parameter");
+            break;
+        case ERR_INV_DATA_SIZE:
+            strcpy(errMsg, "Data overflow (exceeds the 10 bit size)");
+            break;
+        case ERR_INV_STRING_PARAM:
+            strcpy(errMsg, "Invalid string parameter");
+            break;
+        case ERR_INV_MAT_INIT:
+            strcpy(errMsg, "Invalid matrix initializer");
+            break;
+        case ERR_INV_MAT_PARAM_SIZE:
+            strcpy(errMsg, "Matrix data overflow (exceeds the 10 bit size)");
+            break;
         default:
             strcpy(errMsg, "General error occurred");
             break;
