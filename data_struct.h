@@ -2,20 +2,25 @@
 // Created by naortif on 7/26/17.
 //
 
-#include <stdlib.h>
 #ifndef ENDPROJECT_DATA_STRUCT_H
 #define ENDPROJECT_DATA_STRUCT_H
 #include "assembler.h"
 #include "content_validation.h"
+
+/* TODO: IMPORTANT!!! 23/8/17 need to check if it is allowed to define max file size or only max line */
 #define LOOP  for(;;)
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
-#define MAX_OPERANDS 40
 #define MAX_FILE_SIZE 256
 #define WORD_LEN 5
 #define ADDRESS_LEN 4
-
-#define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(1,sizeof(symbolTable));\
+#define STARTING_ADD 100
+#define OUT_EXT ".ext"
+#define OUT_ENT ".ent"
+#define OUT_OB ".ob"
+#define AS_EXT ".as"
+#define MAX_FILE_NAME 256
+#define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(sizeof(symbolTable));\
                                                 strcpy(node->label,(lab));\
                                                 node->address = (add);\
                                                 node->position = (position);\
@@ -47,28 +52,21 @@ struct COMMAND{
     char *cmd;
     int code;
     struct{
-     int noOperand: 2;
-     int immediate: 2;
-     int direct: 2;
-     int matrix: 2;
-     int reg: 2;
+        unsigned noOperand: 2,
+                immediate: 2,
+                direct: 2,
+                matrix: 2,
+                reg: 2;
     }addressingMode_op1;
     struct{
-        int noOperand: 2;
-        int immediate: 2;
-        int direct: 2;
-        int matrix: 2;
-        int reg: 2;
+        unsigned noOperand: 2,
+                immediate: 2,
+                direct: 2,
+                matrix: 2,
+                reg: 2;
     } addressingMode_op2;
 };
 
-#define STARTING_ADD 100
-#define OUT_EXT ".ext"
-#define OUT_ENT ".ent"
-#define OUT_OB ".ob"
-#define AS_EXT ".as"
-
-#define MAX_FILE_NAME 256
 
 symbolTable *symlloc(void);
 
