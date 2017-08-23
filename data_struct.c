@@ -5,13 +5,12 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <ctype.h>
+
 
 #include "content_validation.h"
 #include "data_struct.h"
 #include "error_handler.h"
 #include "helpers.h"
-#include "error_handler.h"
 
 const struct COMMAND const COMMANDS[] = {
                                          {"mov",0,{0,1,1,1,1},{0,0,1,1,1}},
@@ -39,9 +38,6 @@ const char * const REGISTERS[NUM_OF_REG] = {"r0","r1","r2","r3","r4","r5","r6","
 static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
 
 
-
-static dataCounter *data_counter = NULL;
-
 static int dc = STARTING_ADD;
 static int ic = STARTING_ADD;
 static int extref_ind = 0;
@@ -53,10 +49,6 @@ static struct{
     const char * label;
     unsigned int address;
 } extref[MAX_FILE_SIZE] = {0};
-
-symbolTable *fetch_label_symtable(){
-
-}
 
 
 enum ErrorTypes updateSymbolTable(char *label,int address,int position,int format,int iscmd){
@@ -95,13 +87,14 @@ enum ErrorTypes updateSymbolTable(char *label,int address,int position,int forma
         }
     }
 
+
 }
 
 
 /* TODO needs to finish this function */
 void updateData(char *directive,char *op_string){
 
-    char arg1[MAX_LINE],arg2[MAX_LINE],mat[MAX_LINE];
+    char arg1[MAX_LINE],arg2[MAX_LINE];
     char *param;
     int bitword, mat_word_size = 0;
     if(strcmp(directive,"data") == 0){
