@@ -55,4 +55,6 @@ enum ErrorTypes isValidAddressMode(char *cmd,AddressMode src_op, AddressMode des
 
 int validMatInitializer(const char *mat);
 
+int isValidPositiveNum(char *str);
+
 #endif //ENDPROJECT_CONTENT_VALIDATION_H

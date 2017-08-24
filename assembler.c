@@ -119,7 +119,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         else
             errCode = updateIc(cmd, op1, op2, passage);
     }
-    if ((word = safe_strtok(NULL, "")) != NULL)
+    if (errCode == NO_ERR_OCCURRED && (word = safe_strtok(NULL, "")) != NULL)
         return ERR_INV_WORD;
 
     LOG_TRACE(LOG_DEBUG,
@@ -147,7 +147,7 @@ void export_assembly_files(char *outName){
  * @return a pointer to the line
  */
 char* get_line_content(FILE *inpf){
-    static char lineContent[MAX_LINE];
+    static char lineContent[MAX_LINE] = "";
     char *lineptr = lineContent;
 
     if(fgets(lineContent, MAX_LINE, inpf) != NULL) {

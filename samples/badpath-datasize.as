@@ -38,3 +38,8 @@ X:   cmp r1,r2
 	
 ; 10. this line is ok
      stop
+
+; 11. additional barak's checks
+mov   M1[r2][-1],#-1
+
+mov   M1[512][2],#3

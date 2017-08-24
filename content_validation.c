@@ -47,6 +47,21 @@ int isString(char *str){
     return FALSE;
 }
 
+/**
+ * Checks if a num is positive and valid (0-511)
+ * @param str number as string
+ * @return true if number is valid
+ */
+int isValidPositiveNum(char *str) {
+    if (isNum(str)) {
+        int num = atoi(str);
+        if (num >= 0 && num < 512) {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
 
 int isNum(char *str){
     Skip_Space(str);
@@ -103,7 +118,7 @@ int validMatInitializer(const char *mat){
     if(!valid_parentheses(mat))
         return FALSE;
     cpyMatVals(mat,arg1,arg2);
-    if(isNum(arg1) && isNum(arg2))
+    if(isValidPositiveNum(arg1) && isValidPositiveNum(arg2))
         return TRUE;
     return FALSE;
 }
@@ -146,8 +161,8 @@ int isValidMat(char *str) {
     char arg1[MAX_LINE] = "", arg2[MAX_LINE] = "";
 
     if (cpyMatVals(str, arg1, arg2) == TRUE)
-        return (isNum(arg1) || isReg(arg1)) &&
-               (isNum(arg2) || isReg(arg2));
+        return (isValidPositiveNum(arg1) || isReg(arg1)) &&
+               (isValidPositiveNum(arg2) || isReg(arg2));
 
 }
 
