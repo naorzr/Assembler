@@ -32,7 +32,7 @@
 enum {SRC_OP,DEST_OP};
 
 enum positions{ABSOLUTE,EXTERNAL,RELOCATABLE};
-enum{EXTERNAL_ADDRESS = 0, NONE,ENTRY=10,NONE_ENTRY,DSM,CMD2=4,NOT_CMD2=5,NO, YES,SAME_LINE,NEW_LINE,ADD_MODE,VALUE};
+enum{EXTERNAL_ADDRESS = 0, NONE, ENTRY=10, NONE_ENTRY, DSM, CMD2=4, NOT_CMD2=5, NO, YES, SAME_LINE, NEW_LINE, ADD_MODE, VALUE};
 
 typedef struct symbolTable{
     char label[MAX_LINE];
@@ -46,25 +46,21 @@ typedef struct symbolTable{
 
 typedef struct dataCounter{
     unsigned memWord;
-}dataCounter;
+} dataCounter;
+
+typedef struct addressingMode {
+    unsigned noOperand: 2,
+            immediate: 2,
+            direct: 2,
+            matrix: 2,
+            reg: 2;
+} addressingMode;
 
 struct COMMAND{
     char *cmd;
     int code;
-    struct{
-        unsigned noOperand: 2,
-                immediate: 2,
-                direct: 2,
-                matrix: 2,
-                reg: 2;
-    }addressingMode_op1;
-    struct{
-        unsigned noOperand: 2,
-                immediate: 2,
-                direct: 2,
-                matrix: 2,
-                reg: 2;
-    } addressingMode_op2;
+    struct addressingMode addressingMode_op1;
+    struct addressingMode addressingMode_op2;
 };
 
 
@@ -79,6 +75,8 @@ void updateIcCounter(char *op1,char *op2,int *ic);
 enum ErrorTypes updateIc(char *cmd,char *op1,char *op2,int state);
 
 void clear_data_stacks(void);
+
+void clear_code_arr(void);
 
 void free_symbtable(void);
 
@@ -100,7 +98,7 @@ void create_ent_file(char *outf);
 
 void create_ext_file(char *outf);
 
-void freeExtRef();
+void freeExtRef(void);
 
 int isValidNumVal(int num);
 

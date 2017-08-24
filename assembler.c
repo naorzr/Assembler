@@ -25,6 +25,7 @@ enum ErrorTypes parse_file(FILE *inpf, int passage) {
     /* clears data/code and symbol table */
     if (passage == FIRST_PASS) {
         lineNum = 0;
+        clear_code_arr();
         clear_data_stacks();
         free_symbtable();
         freeExtRef();

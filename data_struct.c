@@ -14,6 +14,7 @@
 #include "error_handler.h"
 #include "logger.h"
 
+/* Initialize the command with the appropriate addressing modes rules */
 const struct COMMAND const COMMANDS[] = {
                                          {"mov",0,{0,1,1,1,1},{0,0,1,1,1}},
                                          {"cmp",1,{0,1,1,1,1},{0,1,1,1,1}},
@@ -60,11 +61,18 @@ void freeExtRef() {
     memset(&extref, 0, sizeof(extref));
 }
 
-enum ErrorTypes updateSymbolTable(char *label,int address,int position,int format,int iscmd){
-    symbolTable *node;
-    node = NEW_SYMTABLE_NODE(label,address,position,format,iscmd)
+/**
+ * Clears the code array
+ */
+void clear_code_arr() {
+    memset(code, 0, sizeof(code));
+}
 
-    if(symbolTab_head == NULL) {
+enum ErrorTypes updateSymbolTable(char *label, int address, int position, int format, int iscmd) {
+    symbolTable *node;
+    node = NEW_SYMTABLE_NODE(label, address, position, format, iscmd)
+
+    if (symbolTab_head == NULL) {
         symbolTab_tail = symbolTab_head = node;
         return NO_ERR_OCCURRED;
     }
@@ -191,52 +199,52 @@ int symbToBin(symbolTable *symb){
     return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
 }
 
-void strToBinWord(char *str,AddressMode mode,int op_type,int passage){
+void strToBinWord(char *str, AddressModeType mode, int op_type, int passage){
     int bits = 0;
     static struct {
         unsigned is_srcop_reg:2;
         unsigned is_destop_reg:2;
-    }flag = {FALSE,FALSE};
-    if(op_type == SRC_OP) flag.is_srcop_reg = FALSE;
+    } flag = {FALSE, FALSE};
+    if (op_type == SRC_OP) flag.is_srcop_reg = FALSE;
     symbolTable *symbolId;
     char label[MAX_LINE] = "";
-    char arg1[MAX_LINE],arg2[MAX_LINE];
+    char arg1[MAX_LINE], arg2[MAX_LINE];
 
-    switch(mode){
+    switch (mode) {
         case ADDMODE_IMMEDIATE:
             bits = atoi(&str[1]);
-            if(bits < 0)
-                bits = ~((-1)*bits) + 1;
-            code[++ic] |= bits<<2;
+            if (bits < 0)
+                bits = ~((-1) * bits) + 1;
+            code[++ic] |= bits << 2;
             break;
         case ADDMODE_DIRECT:
-            if(passage == SECOND_PASS && (symbolId = get_symbolId(str)) != NULL)
+            if (passage == SECOND_PASS && (symbolId = get_symbolId(str)) != NULL)
                 code[++ic] |= symbToBin(get_symbolId(str));
             else
                 code[++ic] |= 0;
             break;
         case ADDMODE_MATRIX:
-            strncpy(label,str,strchr(str,'[')-str);
-            if(passage == FIRST_PASS)
+            strncpy(label, str, strchr(str, '[') - str);
+            if (passage == FIRST_PASS)
                 ic++;       /* no label adress yet, progressing one step */
-            else if(passage == SECOND_PASS){
+            else if (passage == SECOND_PASS) {
                 code[++ic] |= symbToBin(get_symbolId(label));
             }
-            cpyMatVals(str,arg1,arg2);
-            code[++ic] |= (atoi(&arg1[1])<<6) | atoi(&arg2[1])<<2;
+            cpyMatVals(str, arg1, arg2);
+            code[++ic] |= (atoi(&arg1[1]) << 6) | atoi(&arg2[1]) << 2;
             break;
         case ADDMODE_REG:
-            if(op_type==SRC_OP)
-                flag.is_srcop_reg = TRUE,ic++;
-            if(op_type==DEST_OP && flag.is_srcop_reg != TRUE)
+            if (op_type == SRC_OP)
+                flag.is_srcop_reg = TRUE, ic++;
+            if (op_type == DEST_OP && flag.is_srcop_reg != TRUE)
                 ic++;
             bits = atoi(&str[1]);
-            code[ic] |= bits<<(op_type == SRC_OP?6:2);
+            code[ic] |= bits << (op_type == SRC_OP ? 6 : 2);
             break;
         case ADDMODE_NO_OPERAND:
             code[ic] |= 0;
         default:
-            return ;
+            return;
     }
 
 }
@@ -245,21 +253,21 @@ void set_offset(void){
     offset = ic-STARTING_ADD;
 }
 
-enum ErrorTypes updateIc(char *cmd,char *src_op,char *dest_op,int passage){
+enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     enum ErrorTypes state;
     int word, i;
     /* will be the matrix argument if needed */
     char *str;
-    AddressMode srcop_mode,destop_mode;
+    AddressModeType srcop_mode, destop_mode;
 
     destop_mode = getAddMode(dest_op);
     srcop_mode = getAddMode(src_op);
 
-    if((state = isValidAddressMode(cmd,srcop_mode,destop_mode)) != NO_ERR_OCCURRED)
+    if ((state = isValidAddressMode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
         return state;
 
-    for(i = 0;i < NUM_OF_CMDS;i++){
-        if(strcmp(cmd,COMMANDS[i].cmd) == 0) {
+    for (i = 0; i < NUM_OF_CMDS; i++) {
+        if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
             code[ic] |= COMMANDS[i].code << 6;
             break;
         }

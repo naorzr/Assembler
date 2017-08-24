@@ -166,11 +166,25 @@ int isValidMat(char *str) {
 
 }
 
+/**
+ * Checks if operand is immediate (number which starts with #)
+ * e.g. #1, #-1
+ * @param op Operand string
+ * @return
+ */
+int is_immediate(char *op) {
+    int num = atoi(op);
+    if (isNum(op) && isValidNumVal(num)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 int getAddMode(char *op) {
     if (strcmp(op, "") == 0)
         return ADDMODE_NO_OPERAND;
     else if (op[0] == '#')
-        return ADDMODE_IMMEDIATE;
+        return is_immediate(op + 1) == TRUE ? ADDMODE_IMMEDIATE : ADDMODE_INVALID;
     else if (is_label(op))
         return ADDMODE_DIRECT;
     else if (isReg(op))
@@ -186,55 +200,60 @@ int getAddMode(char *op) {
     }
 }
 
+/**
+ * Checks if operand addressing mode is valid with a given command
+ * @param op Operand adressing mode
+ * @param cmdAddMode command addressing mode rules
+ * @return error code
+ */
+enum ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode cmdAddMode) {
+    int errFlag = FALSE;
+    switch (op) {
+        case ADDMODE_DIRECT:
+            if (cmdAddMode.direct == OFF) errFlag = TRUE;
+            break;
+        case ADDMODE_IMMEDIATE:
+            if (cmdAddMode.immediate == OFF) errFlag = TRUE;
+            break;
+        case ADDMODE_MATRIX:
+            if (cmdAddMode.matrix == OFF) errFlag = TRUE;
+            break;
+        case ADDMODE_REG:
+            if (cmdAddMode.reg == OFF) errFlag = TRUE;
+            break;
+        case ADDMODE_NO_OPERAND:
+            if (cmdAddMode.noOperand == OFF) errFlag = TRUE;
+            break;
+        default:
+            errFlag = TRUE;
+    }
 
-enum ErrorTypes isValidAddressMode(char *cmd, AddressMode src_op, AddressMode dest_op) {
+    return errFlag ? E_INVALID_ADDMODE: NO_ERR_OCCURRED;
+}
+
+/**
+ * Validate if the addressing modes are correct
+ * @param cmd command
+ * @param src_op source operand addressing mode
+ * @param dest_op destination operand addressing mode
+ * @return error code
+ */
+enum ErrorTypes isValidAddressMode(char *cmd, AddressModeType src_op, AddressModeType dest_op) {
     extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
     int i = 0;
-
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
-            switch (src_op) {
-                case ADDMODE_DIRECT:
-                    if (COMMANDS[i].addressingMode_op1.direct == OFF) return E_INVALID_SRCOP_ADDMODE;
-                    break;
-                case ADDMODE_IMMEDIATE:
-                    if (COMMANDS[i].addressingMode_op1.immediate == OFF) return E_INVALID_SRCOP_ADDMODE;
-                    break;
-                case ADDMODE_MATRIX:
-                    if (COMMANDS[i].addressingMode_op1.matrix == OFF) return E_INVALID_SRCOP_ADDMODE;
-                    break;
-                case ADDMODE_REG:
-                    if (COMMANDS[i].addressingMode_op1.reg == OFF) return E_INVALID_SRCOP_ADDMODE;
-                    break;
-                case ADDMODE_NO_OPERAND:
-                    if (COMMANDS[i].addressingMode_op1.noOperand == OFF) return E_INVALID_SRCOP_ADDMODE;
-                    break;
-                default:
-                    return E_INVALID_SRCOP_ADDMODE;
-            }
+            enum ErrorTypes res;
+            /*  */
+            res = isOpAddressModeValid(src_op, COMMANDS[i].addressingMode_op1);
+            if (res != NO_ERR_OCCURRED)
+                return E_INVALID_SRCOP_ADDMODE;
 
-            switch (dest_op) {
-                case ADDMODE_DIRECT:
-                    if (COMMANDS[i].addressingMode_op2.direct == OFF) return E_INVALID_DESTOP_ADDMODE;
-                    break;
-                case ADDMODE_IMMEDIATE:
-                    if (COMMANDS[i].addressingMode_op2.immediate == OFF) return E_INVALID_DESTOP_ADDMODE;
-                    break;
-                case ADDMODE_MATRIX:
-                    if (COMMANDS[i].addressingMode_op2.matrix == OFF) return E_INVALID_DESTOP_ADDMODE;
-                    break;
-                case ADDMODE_REG:
-                    if (COMMANDS[i].addressingMode_op2.reg == OFF) return E_INVALID_DESTOP_ADDMODE;
-                    break;
-                case ADDMODE_NO_OPERAND:
-                    if (COMMANDS[i].addressingMode_op2.noOperand == OFF) return E_INVALID_DESTOP_ADDMODE;
-                    break;
-                default:
-                    return E_INVALID_DESTOP_ADDMODE;
-            }
-            return NO_ERR_OCCURRED;
+            res = isOpAddressModeValid(dest_op, COMMANDS[i].addressingMode_op2);
+            if (res != NO_ERR_OCCURRED)
+                return E_INVALID_DESTOP_ADDMODE;
         }
     }
-    return FALSE;
+    return NO_ERR_OCCURRED;
 }
 

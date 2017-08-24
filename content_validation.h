@@ -4,7 +4,8 @@
 #ifndef ENDPROJECT_CONTENT_VALIDATION_H
 #define ENDPROJECT_CONTENT_VALIDATION_H
 
-#include "string.h"
+#include <string.h>
+#include "data_struct.h"
 
 enum {OFF,ON};
 enum {FALSE = 0,TRUE = 1};
@@ -15,7 +16,7 @@ typedef enum {
     ADDMODE_DIRECT = 1,
     ADDMODE_MATRIX = 2,
     ADDMODE_REG = 3,
-    }AddressMode;
+    } AddressModeType;
 
 #define Is_External(label) strcmp((label),"extern") == 0
 #define Is_Entry(label)     strcmp((label),"entry") == 0
@@ -35,6 +36,8 @@ typedef enum {
 
 int isReg(char *word);
 
+int is_immediate(char *op);
+
 int is_label(char *label);
 
 int is_dsm(char *word);
@@ -51,7 +54,7 @@ int isValidMat(char *str);
 
 int getAddMode(char *op);
 
-enum ErrorTypes isValidAddressMode(char *cmd,AddressMode src_op, AddressMode dest_op);
+enum ErrorTypes isValidAddressMode(char *cmd,AddressModeType src_op, AddressModeType dest_op);
 
 int validMatInitializer(const char *mat);
 
