@@ -222,8 +222,8 @@ enum ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode c
             if (cmdAddMode.reg == OFF) errFlag = TRUE;
             break;
         case ADDMODE_NO_OPERAND:
-            if (cmdAddMode.noOperand == OFF) errFlag = TRUE;
-            return E_MISS_OP;
+            if (cmdAddMode.noOperand == OFF) return E_MISS_OP;
+            break;
         default:
             errFlag = TRUE;
     }
@@ -247,11 +247,11 @@ enum ErrorTypes isValidAddressMode(char *cmd, AddressModeType src_op, AddressMod
             /*  */
             res = isOpAddressModeValid(src_op, COMMANDS[i].addressingMode_op1);
             if (res != NO_ERR_OCCURRED)
-                return res;
+                return res != E_INVALID_ADDMODE ? res : E_INVALID_SRCOP_ADDMODE;
 
             res = isOpAddressModeValid(dest_op, COMMANDS[i].addressingMode_op2);
             if (res != NO_ERR_OCCURRED)
-                return E_INVALID_DESTOP_ADDMODE;
+                return res != E_INVALID_ADDMODE ? res : E_INVALID_DESTOP_ADDMODE;
         }
     }
     return NO_ERR_OCCURRED;
