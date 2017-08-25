@@ -18,7 +18,7 @@ enum ErrorTypes{
     ERR_LABEL_REDECLARED,
     NO_ERR_OCCURRED,
     E_LABEL_REDEC,    /* label redeclaration */
-    E_INVALID_LABEL,
+    E_UNDECLARED_SYMBOL,
     E_INVALID_SRC_OP,
     E_INVALID_DEST_OP,
     E_INVALID_ADDMODE,

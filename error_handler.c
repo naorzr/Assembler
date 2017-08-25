@@ -64,6 +64,9 @@ void print_error(enum ErrorTypes err, int lineNum, char *line){
         case E_MISS_OP:
             strcpy(errMsg, "Missing operand");
             break;
+        case E_UNDECLARED_SYMBOL:
+            strcpy(errMsg, "Undeclared symbol");
+            break;
         default:
             strcpy(errMsg, "General error occurred");
             break;

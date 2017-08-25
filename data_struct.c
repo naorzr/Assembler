@@ -201,7 +201,7 @@ int symbToBin(symbolTable *symb){
     return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
 }
 
-void strToBinWord(char *str, AddressModeType mode, int op_type, int passage){
+void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, enum ErrorTypes * errCode) {
     int bits = 0;
     static struct {
         unsigned is_srcop_reg:2;
@@ -220,8 +220,12 @@ void strToBinWord(char *str, AddressModeType mode, int op_type, int passage){
             code[++ic] |= bits << 2;
             break;
         case ADDMODE_DIRECT:
-            if (passage == SECOND_PASS && (symbolId = get_symbolId(str)) != NULL)
-                code[++ic] |= symbToBin(get_symbolId(str));
+            if (passage == SECOND_PASS) { /* check if symbol exists at 2nd pass */
+                if((symbolId = get_symbolId(str)) != NULL)
+                    code[++ic] |= symbToBin(symbolId);
+                else
+                    *errCode = E_UNDECLARED_SYMBOL;
+            }
             else
                 code[++ic] |= 0;
             break;
@@ -256,7 +260,7 @@ void set_offset(void){
 }
 
 enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
-    enum ErrorTypes state;
+    enum ErrorTypes errCode = NO_ERR_OCCURRED;
     int word, i;
     char *str;
     AddressModeType srcop_mode, destop_mode;
@@ -264,8 +268,8 @@ enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     destop_mode = getAddMode(dest_op);
     srcop_mode = getAddMode(src_op);
 
-    if ((state = isValidAddressMode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
-        return state;
+    if ((errCode = isValidAddressMode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
+        return errCode;
 
     /* coding the command to a bit-word and updating the array */
     for (i = 0; i < NUM_OF_CMDS; i++) {
@@ -278,11 +282,11 @@ enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : destop_mode) << 2;     /* 2-3 bits */
 
 
-    strToBinWord(src_op, srcop_mode, SRC_OP, passage);      /* inserts source operand as a bit-word */
-    strToBinWord(dest_op, destop_mode, DEST_OP, passage);       /* inserts dest operand as a bit-word */
+    strToBinWord(src_op, srcop_mode, SRC_OP, passage, &errCode);      /* inserts source operand as a bit-word */
+    strToBinWord(dest_op, destop_mode, DEST_OP, passage, &errCode);       /* inserts dest operand as a bit-word */
 
     ic++;
-    return NO_ERR_OCCURRED;
+    return errCode;
 }
 
 int getIc(void){
