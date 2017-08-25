@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         export_assembly_files(strcpy(fileName, argv[i]));
         /* to use the tester, create 3 files that should be tested against. with a postfix of .test
          * for example filename.as.test or filename.ent.test */
-        test(argv[1]);
+        //test(argv[1]);
     }
 
     LOG_TRACE(LOG_INFO, "Program Ended\n");

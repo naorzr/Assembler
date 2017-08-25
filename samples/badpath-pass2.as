@@ -1,13 +1,3 @@
-; This file is intended to check the bad-path of the assembler.
-
-; Each line (except a few) contains an error in the assembly language code.
-; A comment preceding each line explains the error.
-
-; All errors should be detectable in the second pass of the assembler
-; or at the end of first pass (during symbol table consistency check).
-
-; Run the assembler on this file, and verify that it catches all the errors.
-; Your assembler messages need not be identical to the comments in this file.
 
 ; 1. this line is ok (label X is ignored, warning may be issued in 1st pass)
 X:     .extern DATA1

@@ -10,8 +10,10 @@ enum ErrorTypes{
     ERR_INV_DATA_SIZE,
     ERR_INV_STRING_PARAM,
     ERR_INV_DIRECTIVE,
+    ERR_INV_MAT_PARAM,
     ERR_INV_MAT_INIT,
     ERR_INV_MAT_PARAM_SIZE,
+    ERR_EXSS_MAT_VAL,
     ERR_STOP,
     ERR_LABEL_REDECLARED,
     NO_ERR_OCCURRED,
@@ -21,7 +23,8 @@ enum ErrorTypes{
     E_INVALID_DEST_OP,
     E_INVALID_ADDMODE,
     E_INVALID_SRCOP_ADDMODE,
-    E_INVALID_DESTOP_ADDMODE
+    E_INVALID_DESTOP_ADDMODE,
+    E_MISS_OP,
 };
 
 void print_error(enum ErrorTypes err, int lineNum, char *line);

@@ -158,9 +158,11 @@ enum ErrorTypes updateData(char *directive,char *op_string){
         mat_word_size = atoi(arg1)*atoi(arg2);
 
         while (param = strtok(NULL,",NULL")){
+            if(mat_word_size <= 0)
+                return ERR_EXSS_MAT_VAL;
             mat_word_size--;
             if (!isNum(param)) {
-                return ERR_INV_DATA_PARAM;
+                return ERR_INV_MAT_PARAM;
             }
             bitword = atoi(param);
             if (!isValidNumVal(bitword)) {
@@ -256,7 +258,6 @@ void set_offset(void){
 enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     enum ErrorTypes state;
     int word, i;
-    /* will be the matrix argument if needed */
     char *str;
     AddressModeType srcop_mode, destop_mode;
 
@@ -266,17 +267,19 @@ enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     if ((state = isValidAddressMode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
         return state;
 
+    /* coding the command to a bit-word and updating the array */
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
-            code[ic] |= COMMANDS[i].code << 6;
+            code[ic] |= COMMANDS[i].code << 6;  /* 6-9 bits */
             break;
         }
     }
-    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : srcop_mode) << 4;
-    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : destop_mode) << 2;
+    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : srcop_mode) << 4;   /* 4-5 bits */
+    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : destop_mode) << 2;     /* 2-3 bits */
 
-    strToBinWord(src_op, srcop_mode, SRC_OP, passage);
-    strToBinWord(dest_op, destop_mode, DEST_OP, passage);
+
+    strToBinWord(src_op, srcop_mode, SRC_OP, passage);      /* inserts source operand as a bit-word */
+    strToBinWord(dest_op, destop_mode, DEST_OP, passage);       /* inserts dest operand as a bit-word */
 
     ic++;
     return NO_ERR_OCCURRED;

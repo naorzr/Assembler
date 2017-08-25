@@ -49,11 +49,20 @@ void print_error(enum ErrorTypes err, int lineNum, char *line){
         case ERR_INV_STRING_PARAM:
             strcpy(errMsg, "Invalid string parameter");
             break;
+        case ERR_INV_MAT_PARAM:
+            strcpy(errMsg, "Invalid matrix parameter");
+            break;
         case ERR_INV_MAT_INIT:
             strcpy(errMsg, "Invalid matrix initializer");
             break;
         case ERR_INV_MAT_PARAM_SIZE:
             strcpy(errMsg, "Matrix data overflow (exceeds the 10 bit size)");
+            break;
+        case ERR_EXSS_MAT_VAL:
+            strcpy(errMsg, "Excessive matrix values");
+            break;
+        case E_MISS_OP:
+            strcpy(errMsg, "Missing operand");
             break;
         default:
             strcpy(errMsg, "General error occurred");

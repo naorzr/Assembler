@@ -160,7 +160,7 @@ int valid_parentheses(char *str){
 int isValidMat(char *str) {
     char arg1[MAX_LINE] = "", arg2[MAX_LINE] = "";
 
-    if (cpyMatVals(str, arg1, arg2) == TRUE)
+    if (valid_parentheses(str) && cpyMatVals(str, arg1, arg2) == TRUE)
         return (isValidPositiveNum(arg1) || isReg(arg1)) &&
                (isValidPositiveNum(arg2) || isReg(arg2));
 
@@ -223,7 +223,7 @@ enum ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode c
             break;
         case ADDMODE_NO_OPERAND:
             if (cmdAddMode.noOperand == OFF) errFlag = TRUE;
-            break;
+            return E_MISS_OP;
         default:
             errFlag = TRUE;
     }
@@ -247,7 +247,7 @@ enum ErrorTypes isValidAddressMode(char *cmd, AddressModeType src_op, AddressMod
             /*  */
             res = isOpAddressModeValid(src_op, COMMANDS[i].addressingMode_op1);
             if (res != NO_ERR_OCCURRED)
-                return E_INVALID_SRCOP_ADDMODE;
+                return res;
 
             res = isOpAddressModeValid(dest_op, COMMANDS[i].addressingMode_op2);
             if (res != NO_ERR_OCCURRED)
