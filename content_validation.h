@@ -60,4 +60,7 @@ int validMatInitializer(const char *mat);
 
 int isValidPositiveNum(char *str);
 
+int validateCommas(char *str);
+
+
 #endif //ENDPROJECT_CONTENT_VALIDATION_H

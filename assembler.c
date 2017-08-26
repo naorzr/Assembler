@@ -21,10 +21,9 @@ enum ErrorTypes parse_file(FILE *inpf, int passage) {
     } flag = {FALSE};
     char *lineContent;
     enum ErrorTypes error;
-
+    lineNum = 0;
     /* clears data/code and symbol table */
     if (passage == FIRST_PASS) {
-        lineNum = 0;
         clear_code_arr();
         clear_data_stacks();
         free_symbtable();
@@ -36,11 +35,13 @@ enum ErrorTypes parse_file(FILE *inpf, int passage) {
         clear_data_stacks();
     }
 
-    while ((lineContent = get_line_content(inpf)) != NULL)       /* parse line by line */
+    while ((lineContent = get_line_content(inpf)) != NULL) {      /* parse line by line */
+        lineNum++;
         if ((error = parse_line(lineContent, passage)) != NO_ERR_OCCURRED) {
             print_error(error, lineNum, lineContent);
             flag.stop = TRUE;
         }
+    }
     return flag.stop == TRUE? ERR_STOP: NO_ERR_OCCURRED;    /* if an error has occurred tells the program to halt from going into second pass */
 }
 
@@ -61,12 +62,13 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
     }flag = {0};
     dc = getDc();
     ic = getIc();
-    lineNum++;
 
     if(lineContent[0] == ';')       /* case of a comment line */
         return NO_ERR_OCCURRED;
     if((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
         return NO_ERR_OCCURRED;
+    if (!validateCommas(lineContent)) /* validate that there are no extra commas */
+        return ERR_INV_EXTRA_COMMA;
 
     if (LABEL_DEC(word)) {               /* case of label declaration */
         word[strlen(word)-1] = '\0';

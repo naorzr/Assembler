@@ -14,28 +14,50 @@
 #include "error_handler.h"
 #include "logger.h"
 
-/* Initialize the command with the appropriate addressing modes rules */
+/**
+ * Initialize the command with the appropriate addressing modes rules
+ * Every command is initialized in the following order:
+ * e.g.
+ * {
+ *   "mov",              The command name
+ *   0,                  Command code
+ *   {                   Command first operand rules
+ *      0,               No operand - FALSE
+ *      1,               immediate - TRUE
+ *      1,               direct - TRUE
+ *      1,               matrix - TRUE
+ *      1                register - TRUE
+ *   },
+ *   {                   Command 2nd operand rules
+ *      0,               No operand - FALSE
+ *      0,               immediate - FALSE
+ *      1,               direct - TRUE
+ *      1,               matrix - TRUE
+ *      1                register - TRUE
+ *   }
+ * }
+ */
 const struct COMMAND const COMMANDS[] = {
-                                         {"mov",0,{0,1,1,1,1},{0,0,1,1,1}},
-                                         {"cmp",1,{0,1,1,1,1},{0,1,1,1,1}},
-                                         {"add",2,{0,1,1,1,1},{0,0,1,1,1}},
-                                         {"sub",3,{0,1,1,1,1},{0,0,1,1,1}},
-                                         {"not",4,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"clr",5,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"lea",6,{0,0,1,1,0},{0,0,1,1,1}},
-                                         {"inc",7,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"dec",8,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"jmp",9,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"bne",10,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"red",11,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"prn",12,{1,0,0,0,0},{0,1,1,1,1}},
-                                         {"jsr",13,{1,0,0,0,0},{0,0,1,1,1}},
-                                         {"rts",14,{1,0,0,0,0},{1,0,0,0,0}},
-                                         {"stop",15,{1,0,0,0,0},{1,0,0,0,0}}
-                                        };
+        {"mov",  0,  {0, 1, 1, 1, 1}, {0, 0, 1, 1, 1}},
+        {"cmp",  1,  {0, 1, 1, 1, 1}, {0, 1, 1, 1, 1}},
+        {"add",  2,  {0, 1, 1, 1, 1}, {0, 0, 1, 1, 1}},
+        {"sub",  3,  {0, 1, 1, 1, 1}, {0, 0, 1, 1, 1}},
+        {"not",  4,  {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"clr",  5,  {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"lea",  6,  {0, 0, 1, 1, 0}, {0, 0, 1, 1, 1}},
+        {"inc",  7,  {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"dec",  8,  {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"jmp",  9,  {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"bne",  10, {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"red",  11, {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"prn",  12, {1, 0, 0, 0, 0}, {0, 1, 1, 1, 1}},
+        {"jsr",  13, {1, 0, 0, 0, 0}, {0, 0, 1, 1, 1}},
+        {"rts",  14, {1, 0, 0, 0, 0}, {1, 0, 0, 0, 0}},
+        {"stop", 15, {1, 0, 0, 0, 0}, {1, 0, 0, 0, 0}}
+};
 
 
-const char * const REGISTERS[NUM_OF_REG] = {"r0","r1","r2","r3","r4","r5","r6","r7"};
+const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 
 static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
@@ -68,6 +90,15 @@ void clear_code_arr() {
     memset(code, 0, sizeof(code));
 }
 
+/**
+ * Updates the symbols table with a new symbol in a binary tree structure
+ * @param label
+ * @param address
+ * @param position
+ * @param format
+ * @param iscmd
+ * @return
+ */
 enum ErrorTypes updateSymbolTable(char *label, int address, int position, int format, int iscmd) {
     symbolTable *node;
     node = NEW_SYMTABLE_NODE(label, address, position, format, iscmd)

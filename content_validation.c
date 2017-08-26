@@ -180,6 +180,33 @@ int is_immediate(char *op) {
     return FALSE;
 }
 
+/**
+ * Validates commas validity
+ * e.g. cmp r1,,r2 or .mat [2][2] 1,2,3,4, are illigal
+ * @param str
+ * @return
+ */
+int validateCommas(char *str) {
+    int i,
+        len = strlen(str),
+        commaCount = 0;
+
+    for(i=0; i < len; i++) {
+        if (isspace(str[i]))
+            continue;
+        if (str[i] == ',')
+            commaCount++;
+        else
+            commaCount = 0;
+        /* comma cannot come after another comma */
+        if (commaCount > 1)
+            return FALSE;
+    }
+    /* line cannot end with a comma */
+    return commaCount > 0 ? FALSE: TRUE;
+
+}
+
 int getAddMode(char *op) {
     if (strcmp(op, "") == 0)
         return ADDMODE_NO_OPERAND;

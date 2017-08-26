@@ -33,7 +33,7 @@ STR1:   .string "abcdefg"
         .mat [2][3][4]
 
 ; 12. invalid characters (1][2])
-        cmp r1,MAT1[1][2]
+        cmp r1,MAT1(1][2]
 
 ; 13. invalid characters (8])
         cmp r1,MAT1[r2][r8]
