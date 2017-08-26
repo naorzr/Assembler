@@ -220,6 +220,8 @@ int getAddMode(char *op) {
         char label[MAX_LINE] = "";
         char *str;
         str = strchr(op, '[');
+        if (str == NULL)
+            return ADDMODE_INVALID;
         strncpy(label, op, str - op);
         if (!is_label(label) || !isValidMat(str))
             return ADDMODE_INVALID;

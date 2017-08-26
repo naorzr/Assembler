@@ -85,6 +85,8 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
             if (is_dsm(directive)) {
                 if (flag.label && passage == FIRST_PASS)
                     errCode = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
+                if (errCode != NO_ERR_OCCURRED)
+                    return errCode;
                 if (word = safe_strtok(NULL, "")) {
 
                 }
@@ -111,6 +113,9 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
 
         if (flag.label == TRUE && passage == FIRST_PASS)
             errCode = updateSymbolTable(label, ic, RELOCATABLE, NONE_ENTRY, CMD2);
+
+        if (errCode != NO_ERR_OCCURRED)
+            return errCode;
 
         if (word = safe_strtok(NULL, comma))
             strcpy(op1, word);
