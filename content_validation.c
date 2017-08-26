@@ -189,9 +189,14 @@ int is_immediate(char *op) {
 int validateCommas(char *str) {
     int i,
         len = strlen(str),
-        commaCount = 0;
+        commaCount = 0,
+        inString = FALSE;
 
     for(i=0; i < len; i++) {
+        if (str[i] == '"')
+            inString = !inString;
+        if (inString == TRUE)
+            continue;
         if (isspace(str[i]))
             continue;
         if (str[i] == ',')
