@@ -70,6 +70,9 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_UNDECLARED_SYMBOL:
             strcpy(errMsg, "Undeclared symbol");
             break;
+        case ERR_DATA_MISSING_ARG:
+            strcpy(errMsg, "Data missing argument");
+            break;
         default:
             strcpy(errMsg, "General error occurred");
             break;

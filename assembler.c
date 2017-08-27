@@ -86,7 +86,7 @@ ErrorTypes parse_line(char *lineContent,int passage) {
                 if (errCode != NO_ERR_OCCURRED)
                     return errCode;
                 if ((word = safe_strtok(NULL, "")) == NULL)
-                {/* TODO NAOR: need to do something here */}
+                    return ERR_DATA_MISSING_ARG;
                 strcpy(op1, word);
                 errCode = updateData(directive, op1);
             }
