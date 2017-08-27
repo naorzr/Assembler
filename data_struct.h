@@ -15,7 +15,7 @@
 #define OUT_EXT ".ext"
 #define OUT_ENT ".ent"
 #define OUT_OB ".ob"
-#define AS_EXT ".as"
+#define IN_EXT ".as"
 #define MAX_FILE_NAME 256
 #define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(sizeof(symbolTable));\
                                                 strcpy(node->label,(lab));\
