@@ -29,7 +29,7 @@
 enum CmdOpType{SRC_OP,DEST_OP};
 
 enum Positions{ABSOLUTE,EXTERNAL,RELOCATABLE};
-enum {EXTERNAL_ADDRESS = 0, ENTRY=10, NONE_ENTRY,CMD2=4, NOT_CMD2=5};
+enum {EXTERNAL_ADDRESS = 0, ENTRY=10, NONE_ENTRY = 11,CMD2=4, NOT_CMD2=5};
 
 /* symbole table node */
 typedef struct symbolTable{

@@ -98,10 +98,14 @@ ErrorTypes updateSymbolTable(char *label, int address, int position, int format,
 
     /* inserting the node into the bin-tree */
     LOOP {
-        if (strcmp(symbolTab_tail->label, node->label) == 0) {      /* case a symbol with identical name was found */
-            if(format == ENTRY) {               /* if it's an entry than it wont be considered an error, updating label position */
+        /* case a symbol with identical name was found will be considered an error unless
+         * it is an entry/extern declaration*/
+        if (strcmp(symbolTab_tail->label, node->label) == 0) {
+            if(symbolTab_tail->position == EXTERNAL && position == EXTERNAL)
+                return NO_ERR_OCCURRED;
+            if(format == ENTRY && symbolTab_tail->position != EXTERNAL){
                 symbolTab_tail->format = ENTRY;
-                symbolTab_tail->position |= position;
+                symbolTab_tail->position |= position;   /* updating label position */
                 return NO_ERR_OCCURRED;
             }
             else
