@@ -24,6 +24,7 @@ typedef enum AddressModeType{
 #define MIN_POS_INT 0
 #define MAX_POS_INT 512
 #define MAX_NEG_INT -512
+#define MAX_LABEL_SIZE 30
 
 
 

@@ -26,12 +26,13 @@
                                                 node-> right = node->left = NULL;\
 
 
-enum CmdOpType{SRC_OP,DEST_OP};
+enum CmdOpType{SRC_OP, DEST_OP};
 
-enum Positions{ABSOLUTE,EXTERNAL,RELOCATABLE};
+/* Encoding types - Absolute(kept for readability, even though not used)/external/relocatable */
+enum Positions{ABSOLUTE, EXTERNAL, RELOCATABLE};
 enum {EXTERNAL_ADDRESS = 0, ENTRY=10, NONE_ENTRY = 11,CMD2=4, NOT_CMD2=5};
 
-/* symbole table node */
+/* symbol table node */
 typedef struct symbolTable{
     char label[MAX_LINE];
     int address;
@@ -42,7 +43,7 @@ typedef struct symbolTable{
     struct symbolTable *right;
 }symbolTable;
 
-
+/* Struct which defines command operation address mode rules */
 typedef struct addressingMode {
     unsigned noOperand: 2,
             immediate: 2,
@@ -51,6 +52,13 @@ typedef struct addressingMode {
             reg: 2;
 } addressingMode;
 
+/**
+ * Struct which defines command data
+ * cmd - command name
+ * code - commnd code
+ * addressingMode_op1 - address mode rules for first operand
+ * addressingMode_op2 - address mode rules for 2nd operand
+ */
 struct Command{
     char *cmd;
     int code;
@@ -105,7 +113,7 @@ void create_ext_file(char *outf);
 /***********************************************************/
 /*              Miscellaneous Functions                    *
  * ********************************************************/
-void freeExtRef(void);
+void free_ext_ref(void);
 
 
 

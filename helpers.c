@@ -1,8 +1,11 @@
-
-
 #include <string.h>
 #include "helpers.h"
 
+/**
+ * Reverses a string
+ * @param s
+ * @return
+ */
 char* reverse(char* s)
 {
     char* beg = s-1, *end = s, tmp;
@@ -16,7 +19,16 @@ char* reverse(char* s)
     return s;
 }
 
-
+/**
+ * Converts binary to weird-4 base
+ * 00 - a
+ * 01 - b
+ * 10 - c
+ * 11 - d
+ * @param bin
+ * @param fourBaseWord
+ * @param nmems
+ */
 void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
     unsigned mask;
     int i;
@@ -43,7 +55,11 @@ void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
     reverse(head);
 }
 
-
+/**
+ * Wrapper for the malloc method
+ * @param size
+ * @return
+ */
 void *safe_malloc(size_t size){
     void *ptr = malloc(size);
     if(ptr == NULL) {    /* TODO need to add code - error printing */
@@ -53,7 +69,12 @@ void *safe_malloc(size_t size){
     return ptr;
 }
 
-
+/**
+ * Wrapper for the strok method
+ * @param str
+ * @param delim
+ * @return
+ */
 char *safe_strtok(char *str,const char *delim) {
     static char str_cpy[MAX_LINE],*cur;
 
@@ -68,7 +89,11 @@ char *safe_strtok(char *str,const char *delim) {
 }
 
 
-
+/**
+ * Gets the operand address mode
+ * @param op
+ * @return the op address mode
+ */
 AddressModeType getAddMode(char *op) {
     if (strcmp(op, "") == 0)
         return ADDMODE_NO_OPERAND;

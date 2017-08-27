@@ -25,11 +25,12 @@ ErrorTypes parse_file(FILE *inpf, int passage) {
         clear_code_arr();
         clear_data_stacks();
         free_symbtable();
-        freeExtRef();
+        free_ext_ref();
     }
+
     if (passage == SECOND_PASS) {
         set_offset();
-        rewind(inpf);
+        rewind(inpf); /* go back to the beginning of the file in the 2nd pass */
         clear_data_stacks();
     }
 
@@ -49,7 +50,7 @@ ErrorTypes parse_file(FILE *inpf, int passage) {
  * @param passage
  * @return error type in case of an error
  */
-ErrorTypes parse_line(char *lineContent,int passage) {
+ErrorTypes parse_line(char *lineContent, int passage) {
     int dc, ic;
     char label[MAX_LINE] = "", cmd[MAX_LINE] = "", directive[MAX_LINE] = "", op1[MAX_LINE] = "", op2[MAX_LINE] = "";
     char *word;
@@ -57,13 +58,13 @@ ErrorTypes parse_line(char *lineContent,int passage) {
     const char comma[] = " ,\t";
     struct {
         unsigned label: 2;
-    }flag = {0};
+    } flag = {0};
     dc = getDc();
     ic = getIc();
 
-    if(lineContent[0] == ';')       /* case of a comment line */
+    if (lineContent[0] == ';')       /* case of a comment line */
         return NO_ERR_OCCURRED;
-    if((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
+    if ((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
         return NO_ERR_OCCURRED;
     if (!valid_commas(lineContent)) /* validate that there are no extra commas */
         return ERR_INV_EXTRA_COMMA;
@@ -71,51 +72,54 @@ ErrorTypes parse_line(char *lineContent,int passage) {
     if (LABEL_DEC(word)) {               /* case of label declaration */
         word[strlen(word)-1] = '\0';
         strcpy(label, word);
-        if(!is_label(label))
+        if (!is_label(label))
             return ERR_LABEL;
         flag.label = TRUE;
-        if((word = safe_strtok(NULL, " \t")) == NULL)
+        if ((word = safe_strtok(NULL, " \t")) == NULL)
             return ERR_EXPECTED_ARG;
     }
     if (Is_Directive(word)) {       /* case of a directive, in our project a directive is prefixed by a dot*/
         strcpy(directive, &word[1]);
-        if (is_dsm(directive)) {      /* case it's a .data/.string/.mat directive */
+        if (is_dsm(directive)) {      /* in case it's a .data/.string/.mat directive */
             if (is_dsm(directive)) {
                 if (flag.label && passage == FIRST_PASS)
                     errCode = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
                 if (errCode != NO_ERR_OCCURRED)
-                    return errCode;
+                    return errCode;    /* could not update symbol table due to some error */
                 if ((word = safe_strtok(NULL, "")) == NULL)
-                    return ERR_DATA_MISSING_ARG;
+                    return ERR_DATA_MISSING_ARG;  /* missing argument after .data declaration */
                 strcpy(op1, word);
                 errCode = updateData(directive, op1);
             }
-        } else if (Is_External(directive)) {
+        } else if (Is_External(directive)) { /* in case it's an external declaration */
             if ((word = safe_strtok(NULL, " \t")) == NULL)
-                return ERR_EXPECTED_LABEL;
+                return ERR_EXPECTED_LABEL;  /* missing label after external declaration */
             strcpy(label, word);
             if (passage == FIRST_PASS)
                 errCode = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
 
-        } else if (Is_Entry(directive)) {
+        } else if (Is_Entry(directive)) { /* in case it's an entry declaration */
             if ((word = safe_strtok(NULL, " \t")) == NULL || !is_label(word))
-                return ERR_EXPECTED_LABEL;
+                return ERR_EXPECTED_LABEL; /* invalid/missing label */
             strcpy(label, word);
             if (passage == SECOND_PASS)
                 errCode = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
 
         }
-    } else if (is_cmd(word)) {         /* case of a command*/
+    } else if (is_cmd(word)) {         /* in case of a command*/
         strcpy(cmd, word);
 
+        /* in case of label preceding a command, update the symbol table */
         if (flag.label == TRUE && passage == FIRST_PASS)
             errCode = updateSymbolTable(label, ic, RELOCATABLE, NONE_ENTRY, CMD2);
 
         if (errCode != NO_ERR_OCCURRED)
-            return errCode;
+            return errCode; /* could not update symbol table due to some error */
 
+        /* Fetch first op */
         if ((word = safe_strtok(NULL, comma)) != NULL)
             strcpy(op1, word);
+        /* Fetch 2nd op */
         if ((word = safe_strtok(NULL, comma)) != NULL)
             strcpy(op2, word);
 
@@ -124,7 +128,8 @@ ErrorTypes parse_line(char *lineContent,int passage) {
         else
             errCode = updateIc(cmd, op1, op2, passage);
     }
-    if (errCode == NO_ERR_OCCURRED && (word = safe_strtok(NULL, "")) != NULL)
+    /* check that there are no extra words preceding after the line*/
+    if (errCode == NO_ERR_OCCURRED && (safe_strtok(NULL, "")) != NULL)
         return ERR_INV_WORD;
 
     LOG_TRACE(LOG_DEBUG,

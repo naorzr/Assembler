@@ -3,16 +3,24 @@
 #include "logger.h"
 
 
-/* LOG_TRACE(log level, format, args ) */
+/**
+ * Prints formatted string into the relevant output according to the log level
+ * LOG_LEVEL = LOG_DEBUG - will print to output all messages from type debug/info/error
+ * LOG_LEVEL = LOG_INFO - will print to output all messages from type info/error
+ * LOG_LEVEL = LOG_ERROR - will print to output messages from type error
+ * @param lvl
+ * @param fmt
+ * @param ... accepts 1 and more arguments like printf
+ */
 void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ...) {
     va_list list;
     char *s, c;
     int i;
 
     if (lvl <= SELECTED_LOG_LEVEL) {
-        FILE * loc = stdout;
+        FILE *loc = stdout;
 
-        if(lvl == LOG_ERROR) {
+        if (lvl == LOG_ERROR) { /* print errors to stderr */
             loc = stderr;
         }
         va_start(list, fmt);
@@ -22,18 +30,17 @@ void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ...) {
                 putc(*fmt, loc);
             else {
                 switch (*++fmt) {
-                    case 's':
-                        /* set r as the next char in list (string) */
-                        s = va_arg(list,char *);
+                    case 's': /* handle string formatting */
+                        s = va_arg(list, char *);
                         fprintf(loc, "%s", s);
                         break;
 
-                    case 'd':
+                    case 'd': /* handle decimal formatting */
                         i = va_arg(list, int);
                         fprintf(loc, "%d", i);
                         break;
 
-                    case 'c':
+                    case 'c': /* handle char formatting */
                         c = va_arg(list, int);
                         fprintf(loc, "%c", c);
                         break;

@@ -3,10 +3,15 @@
 #include "content_validation.h"
 #include "helpers.h"
 
+/**
+ * Check if string is label
+ * @param label
+ * @return true if string is label
+ */
 int is_label(char *label){
     int i;
     unsigned slen;
-    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || is_dsm(label) || Is_External(label) || Is_Entry(label) || is_cmd(label) || is_reg(label))
+    if((slen = strlen(label)) > MAX_LABEL_SIZE || slen == 0  || !isalpha(label[0]) || is_dsm(label) || Is_External(label) || Is_Entry(label) || is_cmd(label) || is_reg(label))
         return FALSE;
 
     for(i = 0; i < slen-1 ;i++)
@@ -16,13 +21,23 @@ int is_label(char *label){
     return TRUE;
 }
 
-int is_dsm(char *word){
-    if(strcmp(word,"data") == 0 || strcmp(word,"string") == 0 || strcmp(word,"mat") == 0)
+/**
+ * Checks if sting refers to data/string/mat
+ * @param word
+ * @return true if string is data/string/mat
+ */
+int is_dsm(char *word) {
+    if (strcmp(word, "data") == 0 || strcmp(word, "string") == 0 || strcmp(word, "mat") == 0)
         return TRUE;
 
     return FALSE;
 }
 
+/**
+ * Checks if a string refers to a command name
+ * @param word
+ * @return true if string is a command name
+ */
 int is_cmd(char *word){
     int i = 0;
     extern const struct Command COMMANDS[NUM_OF_CMDS];
@@ -33,13 +48,17 @@ int is_cmd(char *word){
     return FALSE;
 }
 
-
-int is_string(char *str){
+/**
+ * Checks if a string refers to a string definition in assembly
+ * @param str
+ * @return true if a given string refers to a string def
+ */
+int is_string(char *str) {
     unsigned len = (unsigned) strlen(str);
-    if(len<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
+    if (len < 3)   /* since quotes takes up two places, the string must be greater than or equal to two */
         return FALSE;
 
-    if(str[0] == '\"' && str[len-1] == '\"')
+    if (str[0] == '\"' && str[len - 1] == '\"')
         return TRUE;
 
     return FALSE;
@@ -61,6 +80,11 @@ int valid_pos_num(char *str) {
     return FALSE;
 }
 
+/**
+ * Checks if a given string is a number
+ * @param str
+ * @return true if the given string is a number
+ */
 int is_num(char *str){
     Skip_Space(str);
     if(*str == '-' || *str == '+')
@@ -75,6 +99,11 @@ int is_num(char *str){
     return *str == '\0'?TRUE:FALSE;
 }
 
+/**
+ * Checks if a given string is a register
+ * @param op
+ * @return true if the string was a register
+ */
 int is_reg(char *op){
     extern const char *const REGISTERS[NUM_OF_REG];
     int i;
@@ -85,6 +114,11 @@ int is_reg(char *op){
     return FALSE;
 }
 
+/**
+ * Checks if the matrix parentheses are valid
+ * @param str matrix initializer as string
+ * @return true if the parentheses are valid
+ */
 int valid_parentheses(char *str){
     char *left,*right;
     unsigned len;
@@ -113,8 +147,11 @@ int valid_parentheses(char *str){
     return FALSE;
 }
 
-
-/* valid mat initializer */
+/**
+ * Checks if the matrix initializers are valid
+ * @param mat
+ * @return
+ */
 int valid_mat_init(char *mat){
     char arg1[MAX_LINE],arg2[MAX_LINE];
     if(!valid_parentheses(mat))
@@ -139,14 +176,13 @@ int is_mat(char *str) {
     return (valid_pos_num(arg1) || is_reg(arg1)) &&
            (valid_pos_num(arg2) || is_reg(arg2));
 
-
 }
 
 /**
- * Checks if operand is immediate (number which starts with #)
+ * Checks if operand is immediate (number which starts with #) address mode
  * e.g. #1, #-1
  * @param op Operand string
- * @return
+ * @return true if the op is immediate address mode
  */
 int is_immediate(char *op) {
     int num = atoi(op);
@@ -233,19 +269,20 @@ ErrorTypes valid_address_mode(char *cmd, AddressModeType src_op, AddressModeType
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
             ErrorTypes res;
-            /*  */
+            /* Checks if source op is valid */
             res = isOpAddressModeValid(src_op, COMMANDS[i].addressingMode_op1);
             if (res != NO_ERR_OCCURRED)
+                /* handle other errors that might have been returned from isOpAddressModeValid */
                 return res != E_INVALID_ADDMODE ? res : E_INVALID_SRCOP_ADDMODE;
-
+            /* Checks if destination op is valid */
             res = isOpAddressModeValid(dest_op, COMMANDS[i].addressingMode_op2);
             if (res != NO_ERR_OCCURRED)
+                /* handle other errors that might have been returned from isOpAddressModeValid */
                 return res != E_INVALID_ADDMODE ? res : E_INVALID_DESTOP_ADDMODE;
         }
     }
     return NO_ERR_OCCURRED;
 }
-
 
 /**
  * Checks if a number is valid (between 511 and -511)

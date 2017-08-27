@@ -1,6 +1,3 @@
-
-
-
 #include <string.h>
 #include <stdio.h>
 #include "content_validation.h"
@@ -51,10 +48,11 @@ const struct Command COMMANDS[] = {
 
 /* strToBinWord: internal function, converts a string to a binary word */
 void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, ErrorTypes * errCode);
+/* List of available registers r0-r7 */
 const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 
-static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
+static symbolTable *symbolTab_head = NULL, *symbolTab_tail = NULL;
 
 
 static unsigned dc = STARTING_ADD;      /* data array address */
@@ -83,7 +81,7 @@ static unsigned extref_ind = 0;
  * @param position
  * @param format
  * @param iscmd
- * @return
+ * @return error type code
  */
 ErrorTypes updateSymbolTable(char *label, int address, int position, int format, int iscmd) {
     symbolTable *node;
@@ -151,13 +149,13 @@ symbolTable *get_symbolId(char *label){
  * @param symb a symbol node to convert
  * @return a binary representation of the symbol node address and position in binary
  */
-int symbToBin(symbolTable *symb){
-    if(symb->position == EXTERNAL) {
-        extref[extref_ind].address = ic+1;
+int symbToBin(symbolTable *symb) {
+    if (symb->position == EXTERNAL) {
+        extref[extref_ind].address = ic + 1;
         extref[extref_ind].label = symb->label;
         extref_ind++;
     }
-    return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
+    return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE ? offset : 0)) << 2) | symb->position;
 }
 
 
@@ -199,13 +197,13 @@ void free_symbtable(void){
  * @param op_string
  * @return
  */
-ErrorTypes updateData(char *directive,char *op_string){
+ErrorTypes updateData(char *directive, char *op_string) {
 
-    char arg1[MAX_LINE],arg2[MAX_LINE];
+    char arg1[MAX_LINE], arg2[MAX_LINE];
     char *param;
     int bitword, mat_word_size = 0;
-    if(strcmp(directive,"data") == 0){
-        param = safe_strtok(op_string,",NULL");
+    if (strcmp(directive, "data") == 0) {
+        param = safe_strtok(op_string, ",NULL");
 
         do {
             if (param == NULL || !is_num(param)) {
@@ -218,30 +216,30 @@ ErrorTypes updateData(char *directive,char *op_string){
             if (bitword < 0)
                 bitword = ~(bitword * -1) + 1;
             data[dc++] = (unsigned) bitword;
-        } while ((param = safe_strtok(NULL,",NULL")) != NULL);
+        } while ((param = safe_strtok(NULL, ",NULL")) != NULL);
 
-    } else if(strcmp(directive,"string") == 0){
-        param = safe_strtok(op_string,"");
-        if(param == NULL || !is_string(param)){
+    } else if (strcmp(directive, "string") == 0) {
+        param = safe_strtok(op_string, "");
+        if (param == NULL || !is_string(param)) {
             return ERR_INV_STRING_PARAM;
         }
-        param[strlen(param)-1] = '\0';
+        param[strlen(param) - 1] = '\0';
         param = &param[1];
-        while(*param)
+        while (*param)
             data[dc++] = (unsigned) *(param++);
 
         data[dc++] = '\0';
 
-    } else if(strcmp(directive,"mat") == 0){
-        param = safe_strtok(op_string," ");
-        if(!valid_mat_init(param)){
+    } else if (strcmp(directive, "mat") == 0) {
+        param = safe_strtok(op_string, " ");
+        if (!valid_mat_init(param)) {
             return ERR_INV_MAT_INIT;
         }
-        cpy_mat_vals(param,arg1,arg2);
-        mat_word_size = atoi(arg1)*atoi(arg2);
+        cpy_mat_vals(param, arg1, arg2);
+        mat_word_size = atoi(arg1) * atoi(arg2);
 
-        while ((param = safe_strtok(NULL,",NULL")) != NULL){
-            if(mat_word_size <= 0)
+        while ((param = safe_strtok(NULL, ",NULL")) != NULL) {
+            if (mat_word_size <= 0)
                 return ERR_EXSS_MAT_VAL;
             mat_word_size--;
             if (!is_num(param)) {
@@ -255,23 +253,30 @@ ErrorTypes updateData(char *directive,char *op_string){
                 bitword = ~(bitword * -1) + 1;
             data[dc++] = (unsigned) bitword;
         }
-        while(mat_word_size--)
+        while (mat_word_size--)
             dc++;
     }
     return NO_ERR_OCCURRED;
 }
 
-
+/**
+ * Getter for the DC variable
+ * @return
+ */
 int getDc(void){
     return dc;
 }
 
-
+/**
+ * Sets the address ic offset
+ */
 void set_offset(void){
     offset = ic-STARTING_ADD;
 }
 
-
+/**
+ * Clears the data stacks
+ */
 void clear_data_stacks(void){
     while(dc > STARTING_ADD)
         data[dc--] = 0;
@@ -285,7 +290,15 @@ void clear_data_stacks(void){
 /*              Code Array Handling Functions             *
  * ********************************************************/
 
-
+/**
+ * Checks the validity of the address mode according to the command rules,
+ * and updates the code arr with the binary code of the cmd+op if no errors occurred.
+ * @param cmd
+ * @param src_op
+ * @param dest_op
+ * @param passage
+ * @return error codes
+ */
 ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     ErrorTypes errCode;
     AddressModeType srcop_mode, destop_mode;
@@ -315,6 +328,10 @@ ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
     return errCode;
 }
 
+/**
+ * Getter for the IC variable
+ * @return
+ */
 int getIc(void){
     return ic;
 }
@@ -323,7 +340,7 @@ int getIc(void){
 /**
  * Clears the code array
  */
-void clear_code_arr() {
+void clear_code_arr(void) {
     memset(code, 0, sizeof(code));
 }
 
@@ -333,78 +350,92 @@ void clear_code_arr() {
 /*              File Exporting Functions                   *
  * ********************************************************/
 
-
-void create_ob_file(char *fileName){
+/**
+ * Creates assembler object file
+ * @param fileName
+ */
+void create_ob_file(char *fileName) {
     FILE *outf;
     unsigned i;
     char outFileName[FILENAME_MAX];
     char word[WORD_LEN + 1];
     char address[ADDRESS_LEN + 1];
-    strcpy(outFileName,fileName);
+    strcpy(outFileName, fileName);
 
-    if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
-    {
-        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
+    if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL) {
+        LOG_TRACE(LOG_ERROR, "Could not write to %s", "%s");
         exit(EXIT_FAILURE);
     }
-    for(i = STARTING_ADD;i<ic;i++){
-        binToWeirdFour(i,address,ADDRESS_LEN);
-        fprintf(outf,"%.4s\t",address);
-        binToWeirdFour(code[i],word,WORD_LEN);
-        fprintf(outf,"%.5s\n",word);
+    for (i = STARTING_ADD; i < ic; i++) {
+        binToWeirdFour(i, address, ADDRESS_LEN);
+        fprintf(outf, "%.4s\t", address);
+        binToWeirdFour(code[i], word, WORD_LEN);
+        fprintf(outf, "%.5s\n", word);
     }
-    for(i = STARTING_ADD;i<dc;i++){
-        binToWeirdFour(i+offset,address,ADDRESS_LEN);
-        fprintf(outf,"%.4s\t",address);
-        binToWeirdFour(data[i],word,WORD_LEN);
-        fprintf(outf,"%.5s\n",word);
+    for (i = STARTING_ADD; i < dc; i++) {
+        binToWeirdFour(i + offset, address, ADDRESS_LEN);
+        fprintf(outf, "%.4s\t", address);
+        binToWeirdFour(data[i], word, WORD_LEN);
+        fprintf(outf, "%.5s\n", word);
     }
 
     fclose(outf);
 }
 
-void create_ext_file(char *fileName){
+/**
+ * Creates assembler external file
+ * @param fileName
+ */
+void create_ext_file(char *fileName) {
     int i = 0;
     FILE *outf;
     char outFileName[MAX_FILE_NAME];
     char address[ADDRESS_LEN + 1];
-    strcpy(outFileName,fileName);
-    if((outf = fopen(strcat(outFileName,OUT_EXT),"w")) == NULL)
-    {
-        fprintf(stderr,"Could not write to %s","%s");
+    strcpy(outFileName, fileName);
+    if ((outf = fopen(strcat(outFileName, OUT_EXT), "w")) == NULL) {
+        fprintf(stderr, "Could not write to %s", "%s");
         exit(EXIT_FAILURE);
     }
-    for(i = 0;i<extref_ind;i++) {
-        binToWeirdFour(extref[i].address,address,ADDRESS_LEN);
+    for (i = 0; i < extref_ind; i++) {
+        binToWeirdFour(extref[i].address, address, ADDRESS_LEN);
         fprintf(outf, "%s\t%s\n", extref[i].label, address);
     }
     fclose(outf);
 }
 
-void print_ent(FILE *outf,symbolTable *symnode){
-    static char address[ADDRESS_LEN+1];
-    if(symnode == NULL)
+/**
+ * Prints the symbol entries into the entry file
+ * @param outf output file stream
+ * @param symnode symbol table
+ */
+void print_ent(FILE *outf, symbolTable *symnode) {
+    static char address[ADDRESS_LEN + 1];
+    if (symnode == NULL)
         return;
-    else if(symnode->format == ENTRY) {
-        binToWeirdFour(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE?offset:0),address,ADDRESS_LEN);
-        fprintf(outf, "%s\t%s\n", symnode->label,address);
+    else if (symnode->format == ENTRY) {
+        binToWeirdFour(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE ? offset : 0),
+                       address, ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", symnode->label, address);
     }
-    print_ent(outf,symnode->right);
-    print_ent(outf,symnode->left);
+    print_ent(outf, symnode->right);
+    print_ent(outf, symnode->left);
 
 }
 
-void create_ent_file(char *fileName){
+/**
+ * Creates assembler entry file
+ * @param fileName
+ */
+void create_ent_file(char *fileName) {
     FILE *outf;
     char outFileName[MAX_FILE_NAME];
-    strcpy(outFileName,fileName);
-    if((outf = fopen(strcat(outFileName,OUT_ENT),"w")) == NULL)
-    {
-        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
+    strcpy(outFileName, fileName);
+    if ((outf = fopen(strcat(outFileName, OUT_ENT), "w")) == NULL) {
+        LOG_TRACE(LOG_ERROR, "Could not write to %s", "%s");
         exit(EXIT_FAILURE);
     }
 
-    print_ent(outf,symbolTab_head);
+    print_ent(outf, symbolTab_head);
 
     fclose(outf);
 }
@@ -415,7 +446,14 @@ void create_ent_file(char *fileName){
  * ********************************************************/
 
 
-
+/**
+ * Converts string to binary code according to the appropriate address mode
+ * @param str
+ * @param mode
+ * @param op_type Operand type source/destination
+ * @param passage
+ * @param errCode
+ */
 void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, ErrorTypes * errCode) {
     char label[MAX_LINE] = "";
     char arg1[MAX_LINE], arg2[MAX_LINE];
@@ -436,7 +474,7 @@ void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, Err
             code[++ic] |= bits << 2;
             break;
         case ADDMODE_DIRECT:
-            if (passage == SECOND_PASS) { /* check if symbol exists at 2nd pass */
+            if (passage == SECOND_PASS) { /* check if symbol exists at the 2nd pass */
                 if((symbolId = get_symbolId(str)) != NULL)
                     code[++ic] |= symbToBin(symbolId);
                 else
@@ -474,7 +512,7 @@ void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, Err
 /**
  * Frees the external reference
  */
-void freeExtRef() {
+void free_ext_ref(void) {
     extref_ind = 0;
     memset(&extref, 0, sizeof(extref));
 }
