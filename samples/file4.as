@@ -27,7 +27,7 @@ void strToBinWord(char *str,AddressMode mode,int op_type,int passage){
             else if(passage == SECOND_PASS){
                 bits |=
             }
-            cpyMatVals(str,arg1,arg2);
+            cpy_mat_vals(str,arg1,arg2);
             return (atoi(&arg1[1])<<6) | atoi(&arg2[1])<<2;
         case ADDMODE_REG:
             if(op_type==SRC_OP)

@@ -1,14 +1,12 @@
 #include <string.h>
 #include <ctype.h>
 #include "content_validation.h"
-#include "assembler.h"
-#include "data_struct.h"
 #include "helpers.h"
-#include "error_handler.h"
 
 int is_label(char *label){
-    int i,slen;
-    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || is_dsm(label) || Is_External(label) || Is_Entry(label) || isCmd(label) || isReg(label))
+    int i;
+    unsigned slen;
+    if((slen = strlen(label)) > 30 || slen == 0  || !isalpha(label[0]) || is_dsm(label) || Is_External(label) || Is_Entry(label) || is_cmd(label) || is_reg(label))
         return FALSE;
 
     for(i = 0; i < slen-1 ;i++)
@@ -25,9 +23,9 @@ int is_dsm(char *word){
     return FALSE;
 }
 
-int isCmd(char *word){
+int is_cmd(char *word){
     int i = 0;
-    extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
+    extern const struct Command COMMANDS[NUM_OF_CMDS];
     for(i = 0;i<NUM_OF_CMDS;i++)
         if(strcmp(COMMANDS[i].cmd,word) == 0)
             return TRUE;
@@ -36,7 +34,7 @@ int isCmd(char *word){
 }
 
 
-int isString(char *str){
+int is_string(char *str){
     unsigned len = (unsigned) strlen(str);
     if(len<3)   /* since quotes takes up two places, the string must be greater than or equal to two */
         return FALSE;
@@ -52,10 +50,10 @@ int isString(char *str){
  * @param str number as string
  * @return true if number is valid
  */
-int isValidPositiveNum(char *str) {
-    if (isNum(str)) {
+int valid_pos_num(char *str) {
+    if (is_num(str)) {
         int num = atoi(str);
-        if (num >= 0 && num < 512) {
+        if (num >= 0 && num < 512) {        /* TODO BARAK: please replace 512 with a macro or enum */
             return TRUE;
         }
     }
@@ -63,13 +61,13 @@ int isValidPositiveNum(char *str) {
     return FALSE;
 }
 
-int isNum(char *str){
+int is_num(char *str){
     Skip_Space(str);
     if(*str == '-' || *str == '+')
         str++;
 
     while (isdigit(*str) != '\0')
-            str++;
+        str++;
 
     if (*str == ' ')
         Skip_Space(str);
@@ -77,8 +75,8 @@ int isNum(char *str){
     return *str == '\0'?TRUE:FALSE;
 }
 
-int isReg(char *op){
-    extern const char * const REGISTERS[NUM_OF_REG];
+int is_reg(char *op){
+    extern const char *const REGISTERS[NUM_OF_REG];
     int i;
     for(i = 0;i < NUM_OF_REG;i++)
         if(strcmp(REGISTERS[i],op) == 0)
@@ -87,45 +85,8 @@ int isReg(char *op){
     return FALSE;
 }
 
-int cpyMatVals(const char *mat, char *arg1, char *arg2) {
-    char *op1, *op2;
-    int i;
-    char temp_mat[MAX_LINE] = "";
-    strcpy(temp_mat, mat);
-    /* TODO: fix that skip space with the temp_mat. function not working cause its an array being passed(allocate dynamic memory) */
-
-    op1 = strchr(mat, '[');
-    for (i = 0; i < MAX_LINE && *(++op1) != ']'; i++)
-        if (isspace(*op1))
-            continue;
-        else
-            arg1[i] = *op1;
-    arg1[i] = '\0';
-
-    op2 = strchr(op1, '[');
-    for (i = 0; i < MAX_LINE && *(++op2) != ']'; i++)
-        if (isspace(*op2))
-            continue;
-        else
-            arg2[i] = *op2;
-    arg2[i] = '\0';
-
-    return TRUE;
-}
-
-int validMatInitializer(const char *mat){
-    char arg1[MAX_LINE],arg2[MAX_LINE];
-    if(!valid_parentheses(mat))
-        return FALSE;
-    cpyMatVals(mat,arg1,arg2);
-    if(isValidPositiveNum(arg1) && isValidPositiveNum(arg2))
-        return TRUE;
-    return FALSE;
-}
-
 int valid_parentheses(char *str){
     char *left,*right;
-    int i,k;
     unsigned len;
     Skip_Space(str)
 
@@ -152,17 +113,32 @@ int valid_parentheses(char *str){
     return FALSE;
 }
 
+
+/* valid mat initializer */
+int valid_mat_init(char *mat){
+    char arg1[MAX_LINE],arg2[MAX_LINE];
+    if(!valid_parentheses(mat))
+        return FALSE;
+    cpy_mat_vals(mat,arg1,arg2);
+    if(valid_pos_num(arg1) && valid_pos_num(arg2))
+        return TRUE;
+    return FALSE;
+}
+
 /**
  * Checks matrix arguments validity
  * @param str matrix string
  * @return
  */
-int isValidMat(char *str) {
+int is_mat(char *str) {
     char arg1[MAX_LINE] = "", arg2[MAX_LINE] = "";
 
-    if (valid_parentheses(str) && cpyMatVals(str, arg1, arg2) == TRUE)
-        return (isValidPositiveNum(arg1) || isReg(arg1)) &&
-               (isValidPositiveNum(arg2) || isReg(arg2));
+    if (valid_parentheses(str))
+        cpy_mat_vals(str, arg1, arg2);
+
+    return (valid_pos_num(arg1) || is_reg(arg1)) &&
+           (valid_pos_num(arg2) || is_reg(arg2));
+
 
 }
 
@@ -174,7 +150,7 @@ int isValidMat(char *str) {
  */
 int is_immediate(char *op) {
     int num = atoi(op);
-    if (isNum(op) && isValidNumVal(num)) {
+    if (is_num(op) && valid_num_val(num)) {
         return TRUE;
     }
     return FALSE;
@@ -186,11 +162,11 @@ int is_immediate(char *op) {
  * @param str
  * @return
  */
-int validateCommas(char *str) {
-    int i,
-        len = strlen(str),
-        commaCount = 0,
-        inString = FALSE;
+int valid_commas(char *str) {
+    unsigned len = strlen(str);
+    int     i,
+            commaCount = 0,
+            inString = FALSE;
 
     for(i=0; i < len; i++) {
         if (str[i] == '"')
@@ -212,35 +188,14 @@ int validateCommas(char *str) {
 
 }
 
-int getAddMode(char *op) {
-    if (strcmp(op, "") == 0)
-        return ADDMODE_NO_OPERAND;
-    else if (op[0] == '#')
-        return is_immediate(op + 1) == TRUE ? ADDMODE_IMMEDIATE : ADDMODE_INVALID;
-    else if (is_label(op))
-        return ADDMODE_DIRECT;
-    else if (isReg(op))
-        return ADDMODE_REG;
-    else {
-        char label[MAX_LINE] = "";
-        char *str;
-        str = strchr(op, '[');
-        if (str == NULL)
-            return ADDMODE_INVALID;
-        strncpy(label, op, str - op);
-        if (!is_label(label) || !isValidMat(str))
-            return ADDMODE_INVALID;
-        return ADDMODE_MATRIX;
-    }
-}
 
 /**
  * Checks if operand addressing mode is valid with a given command
- * @param op Operand adressing mode
+ * @param op Operand addressing mode
  * @param cmdAddMode command addressing mode rules
  * @return error code
  */
-enum ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode cmdAddMode) {
+ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode cmdAddMode) {
     int errFlag = FALSE;
     switch (op) {
         case ADDMODE_DIRECT:
@@ -272,12 +227,12 @@ enum ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode c
  * @param dest_op destination operand addressing mode
  * @return error code
  */
-enum ErrorTypes isValidAddressMode(char *cmd, AddressModeType src_op, AddressModeType dest_op) {
-    extern const struct COMMAND const COMMANDS[NUM_OF_CMDS];
+ErrorTypes valid_address_mode(char *cmd, AddressModeType src_op, AddressModeType dest_op) {
+    extern const struct Command COMMANDS[NUM_OF_CMDS];
     int i = 0;
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
-            enum ErrorTypes res;
+            ErrorTypes res;
             /*  */
             res = isOpAddressModeValid(src_op, COMMANDS[i].addressingMode_op1);
             if (res != NO_ERR_OCCURRED)
@@ -289,5 +244,15 @@ enum ErrorTypes isValidAddressMode(char *cmd, AddressModeType src_op, AddressMod
         }
     }
     return NO_ERR_OCCURRED;
+}
+
+
+/**
+ * Checks if a number is valid (between 511 and -511)
+ * @param num
+ * @return
+ */
+int valid_num_val(int num) {
+    return num < 512 && num > -512; /* TODO BARAK: same here. needs to replace number with a macro or enum */
 }
 

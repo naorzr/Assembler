@@ -1,13 +1,14 @@
 /*
- * Maman14: This is an assembly program for assembly files
+ * Mamman14: This is an assembly program for assembly files
  * @authors:
  * Barak Kinarti
- * Naor Zruk
+ * Naor Zruk    204424071
  */
+
+
 #include "logger.h"
 #include "assembler.h"
 #include "data_struct.h"
-#include "error_handler.h"
 
 /**
  * Gets command line arguments with the assembly file names and interpret them one by one
@@ -31,17 +32,17 @@ int main(int argc, char **argv) {
         }
         if (parse_file(inpf, FIRST_PASS) != NO_ERR_OCCURRED) {
             LOG_TRACE(LOG_ERROR, "Errors found during the first pass phase of file name: %s, skipping to the next file\n", fileName);
+            fclose(inpf);
             continue;
         }
         if (parse_file(inpf, SECOND_PASS) != NO_ERR_OCCURRED) {
             LOG_TRACE(LOG_ERROR, "Errors found during the second pass phase of file name: %s, skipping to the next file\n", fileName);
+            fclose(inpf);
             continue;
         }
         fclose(inpf);
         export_assembly_files(strcpy(fileName, argv[i]));
-        /* to use the tester, create 3 files that should be tested against. with a postfix of .test
-         * for example filename.as.test or filename.ent.test */
-        //test(argv[1]);
+
     }
 
     LOG_TRACE(LOG_INFO, "Program Ended\n");

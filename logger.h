@@ -2,7 +2,6 @@
 #ifndef ENDPROJECT_LOGGER_H
 #define ENDPROJECT_LOGGER_H
 
-#endif //ENDPROJECT_LOGGER_H
 
 typedef enum
 {
@@ -14,3 +13,6 @@ typedef enum
 #define SELECTED_LOG_LEVEL LOG_INFO
 
 void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ... );
+
+
+#endif /*ENDPROJECT_LOGGER_H*/

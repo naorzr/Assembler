@@ -1,10 +1,7 @@
-//
-// Created by naortif on 8/9/17.
-//
 
-#include "helpers.h"
-#include "assembler.h"
+
 #include <string.h>
+#include "helpers.h"
 
 char* reverse(char* s)
 {
@@ -18,8 +15,10 @@ char* reverse(char* s)
     }
     return s;
 }
-void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
-    unsigned mask = 3;
+
+
+void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
+    unsigned mask;
     int i;
     char *head = fourBaseWord;
     for(i = 0, mask = 3;i < nmems;i++,bin>>=2,fourBaseWord++)
@@ -36,6 +35,9 @@ void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
             case 3:
                 *fourBaseWord = 'd';
                 break;
+            default:
+                *fourBaseWord = '\0';
+                return;
         }
     *(fourBaseWord) = '\0';
     reverse(head);
@@ -45,22 +47,84 @@ void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
 void *safe_malloc(size_t size){
     void *ptr = malloc(size);
     if(ptr == NULL) {    /* TODO need to add code - error printing */
-        fprintf(stderr,"Could not allocate memory");
+        fprintf(stderr, "Could not allocate memory");
         exit(EXIT_FAILURE);
     }
-
-
     return ptr;
 }
 
+
+char *safe_strtok(char *str,const char *delim) {
+    static char str_cpy[MAX_LINE],*cur;
+
+    if (str != NULL) {
+        strncpy(str_cpy, str, MAX_LINE);
+        cur = strtok(str_cpy, delim);
+    }
+    else
+        cur = strtok(NULL,delim);
+
+    return cur;
+}
+
+
+
+AddressModeType getAddMode(char *op) {
+    if (strcmp(op, "") == 0)
+        return ADDMODE_NO_OPERAND;
+    else if (op[0] == '#')
+        return is_immediate(op + 1) == TRUE ? ADDMODE_IMMEDIATE : ADDMODE_INVALID;
+    else if (is_label(op))
+        return ADDMODE_DIRECT;
+    else if (is_reg(op))
+        return ADDMODE_REG;
+    else {
+        char label[MAX_LINE] = "";
+        char *str;
+        str = strchr(op, '[');
+        if (str == NULL)
+            return ADDMODE_INVALID;
+        strncpy(label, op, str - op);
+        if (!is_label(label) || !is_mat(str))
+            return ADDMODE_INVALID;
+        return ADDMODE_MATRIX;
+    }
+}
+
+
+int cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
+    char *op1, *op2;
+    int i;
+    char temp_mat[MAX_LINE] = "";
+    strcpy(temp_mat, mat);
+    /* TODO: fix that skip space with the temp_mat. function not working cause its an array being passed(allocate dynamic memory) */
+
+    op1 = strchr(mat, '[');
+    for (i = 0; i < MAX_LINE && *(++op1) != ']'; i++)
+        if (isspace(*op1))
+            continue;
+        else
+            arg1[i] = *op1;
+    arg1[i] = '\0';
+
+    op2 = strchr(op1, '[');
+    for (i = 0; i < MAX_LINE && *(++op2) != ']'; i++)
+        if (isspace(*op2))
+            continue;
+        else
+            arg2[i] = *op2;
+    arg2[i] = '\0';
+
+    return TRUE;
+}
+
+/*
 char *safe_strtok(char *str, char *delim) {
     static char *str_cpy, *head = NULL, *cur = NULL;
     if (head == NULL)
         head = str_cpy = safe_malloc(sizeof(char) * MAX_LINE);
-    if (str_cpy == NULL && head == NULL) {
-        fprintf(stderr, "Error allocating memory");
-        exit(EXIT_FAILURE);
-    }
+
+
     if (cur == NULL && str != NULL)
         str_cpy = strncpy(head, str, MAX_LINE);
     else
@@ -68,3 +132,5 @@ char *safe_strtok(char *str, char *delim) {
     cur = strtok(str_cpy, delim);
     return cur;
 }
+
+ */

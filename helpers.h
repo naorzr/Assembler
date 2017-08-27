@@ -1,30 +1,28 @@
-//
-// Created by naortif on 8/9/17.
-//
 
 #ifndef ENDPROJECT_HELPERS_H
 #define ENDPROJECT_HELPERS_H
 
 #include <stdlib.h>
 #include "ctype.h"
+#include "content_validation.h"
 
 #define Skip_Space(str) while(*(str)!='\0' && isspace(*(str)))\
                                 (str)++;
 
 
-#define a 0
-#define b 1
-#define c 2
-#define d 3
-
-
 /* my own version of strtok that does not mutate the given string */
-char *safe_strtok(char *str,char *delim);
+char *safe_strtok(char *str,const char *delim);
 
 
 void *safe_malloc(size_t size);
 
 
-void binToWierdFour(unsigned int bin,char *fourBaseWord,unsigned nmems);
+void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems);
 
-#endif //ENDPROJECT_HELPERS_H
+
+AddressModeType getAddMode(char *op);
+
+
+int cpy_mat_vals(const char *mat,char *arg1,char *arg2);
+
+#endif /*ENDPROJECT_HELPERS_H*/

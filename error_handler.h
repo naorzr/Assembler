@@ -1,7 +1,7 @@
 #ifndef ENDPROJECT_ERROR_HANDLER_H
 #define ENDPROJECT_ERROR_HANDLER_H
 
-enum ErrorTypes{
+typedef enum {
     ERR_LABEL,
     ERR_EXPECTED_ARG,
     ERR_EXPECTED_LABEL,
@@ -18,15 +18,12 @@ enum ErrorTypes{
     ERR_STOP,
     ERR_LABEL_REDECLARED,
     NO_ERR_OCCURRED,
-    E_LABEL_REDEC,    /* label redeclaration */
     E_UNDECLARED_SYMBOL,
-    E_INVALID_SRC_OP,
-    E_INVALID_DEST_OP,
     E_INVALID_ADDMODE,
     E_INVALID_SRCOP_ADDMODE,
     E_INVALID_DESTOP_ADDMODE,
-    E_MISS_OP,
-};
+    E_MISS_OP
+}ErrorTypes;
 
-void print_error(enum ErrorTypes err, int lineNum, char *line);
-#endif //ENDPROJECT_ERROR_HANDLER_H
+void print_error(ErrorTypes err, int lineNum, char *line);
+#endif /*ENDPROJECT_ERROR_HANDLER_H*/

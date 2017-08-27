@@ -1,17 +1,10 @@
-//
-// Created by naortif on 7/26/17.
-//
+
 
 
 #include <string.h>
 #include <stdio.h>
-
-
 #include "content_validation.h"
-#include "data_struct.h"
-#include "error_handler.h"
 #include "helpers.h"
-#include "error_handler.h"
 #include "logger.h"
 
 /**
@@ -37,7 +30,7 @@
  *   }
  * }
  */
-const struct COMMAND const COMMANDS[] = {
+const struct Command COMMANDS[] = {
         {"mov",  0,  {0, 1, 1, 1, 1}, {0, 0, 1, 1, 1}},
         {"cmp",  1,  {0, 1, 1, 1, 1}, {0, 1, 1, 1, 1}},
         {"add",  2,  {0, 1, 1, 1, 1}, {0, 0, 1, 1, 1}},
@@ -56,17 +49,18 @@ const struct COMMAND const COMMANDS[] = {
         {"stop", 15, {1, 0, 0, 0, 0}, {1, 0, 0, 0, 0}}
 };
 
-
+/* strToBinWord: internal function, converts a string to a binary word */
+void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, ErrorTypes * errCode);
 const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 
 static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
 
 
-static int dc = STARTING_ADD;
-static int ic = STARTING_ADD;
-static int extref_ind = 0;
-static int offset = 0;
+static unsigned dc = STARTING_ADD;
+static unsigned ic = STARTING_ADD;
+static unsigned extref_ind = 0;
+static unsigned offset = 0;
 
 static unsigned code[MAX_FILE_SIZE] = {0};
 static unsigned data[MAX_FILE_SIZE] = {0};
@@ -75,23 +69,16 @@ static struct{
     unsigned int address;
 } extref[MAX_FILE_SIZE] = {0};
 
-/**
- * Frees the external reference
- */
-void freeExtRef() {
-    extref_ind = 0;
-    memset(&extref, 0, sizeof(extref));
-}
+
+
+/***********************************************************/
+/*              Symbol Table Handling Functions             *
+ * ********************************************************/
+
 
 /**
- * Clears the code array
- */
-void clear_code_arr() {
-    memset(code, 0, sizeof(code));
-}
-
-/**
- * Updates the symbols table with a new symbol in a binary tree structure
+ * Updates the symbols table with a new symbol.
+ * Symbol Table is represented as a binary search tree, whereas each node contains all the symbol data
  * @param label
  * @param address
  * @param position
@@ -99,7 +86,7 @@ void clear_code_arr() {
  * @param iscmd
  * @return
  */
-enum ErrorTypes updateSymbolTable(char *label, int address, int position, int format, int iscmd) {
+ErrorTypes updateSymbolTable(char *label, int address, int position, int format, int iscmd) {
     symbolTable *node;
     node = NEW_SYMTABLE_NODE(label, address, position, format, iscmd)
 
@@ -111,7 +98,7 @@ enum ErrorTypes updateSymbolTable(char *label, int address, int position, int fo
     symbolTab_tail = symbolTab_head;
 
     LOOP {
-        if (strcmp(symbolTab_tail->label, node->label) == 0) {
+        if (strcmp(symbolTab_tail->label, node->label) == 0) {      /* case a symbol was found */
             if(format == ENTRY) {
                 symbolTab_tail->format = ENTRY;
                 symbolTab_tail->position |= position;
@@ -137,77 +124,6 @@ enum ErrorTypes updateSymbolTable(char *label, int address, int position, int fo
 
 
 }
-/**
- * Checks if a number is valid (between 511 and -511)
- * @param num
- * @return
- */
-int isValidNumVal(int num) {
-    return num < 512 && num > -512;
-}
-
-/* TODO needs to finish this function */
-enum ErrorTypes updateData(char *directive,char *op_string){
-
-    char arg1[MAX_LINE],arg2[MAX_LINE];
-    char *param;
-    int bitword, mat_word_size = 0;
-    if(strcmp(directive,"data") == 0){
-        param = strtok(op_string,",NULL");
-
-        do {
-            if (param == NULL || !isNum(param)) {
-                return ERR_INV_DATA_PARAM;
-            }
-            bitword = atoi(param);
-            if (!isValidNumVal(bitword)) {
-                return ERR_INV_DATA_SIZE;
-            }
-            if (bitword < 0)
-                bitword = ~(bitword * -1) + 1;
-            data[dc++] = bitword;
-        } while (param = strtok(NULL,",NULL"));
-
-    } else if(strcmp(directive,"string") == 0){
-        param = strtok(op_string,"");
-        if(param == NULL || !isString(param)){
-            return ERR_INV_STRING_PARAM;
-        }
-        param[strlen(param)-1] = '\0';
-        param = &param[1];
-        while(*param)
-            data[dc++] = *(param++);
-
-        data[dc++] = '\0';
-
-    } else if(strcmp(directive,"mat") == 0){
-        param = strtok(op_string," ");
-        if(!validMatInitializer(param)){
-            return ERR_INV_MAT_INIT;
-        }
-        cpyMatVals(param,arg1,arg2);
-        mat_word_size = atoi(arg1)*atoi(arg2);
-
-        while (param = strtok(NULL,",NULL")){
-            if(mat_word_size <= 0)
-                return ERR_EXSS_MAT_VAL;
-            mat_word_size--;
-            if (!isNum(param)) {
-                return ERR_INV_MAT_PARAM;
-            }
-            bitword = atoi(param);
-            if (!isValidNumVal(bitword)) {
-                return ERR_INV_MAT_PARAM_SIZE;
-            }
-            if (bitword < 0)
-                bitword = ~(bitword * -1) + 1;
-            data[dc++] = bitword;
-        }
-        while(mat_word_size--)
-            dc++;
-    }
-    return NO_ERR_OCCURRED;
-}
 
 
 symbolTable *get_symbolId(char *label){
@@ -223,6 +139,7 @@ symbolTable *get_symbolId(char *label){
     return NULL;
 }
 
+
 int symbToBin(symbolTable *symb){
     if(symb->position == EXTERNAL) {
         extref[extref_ind].address = ic+1;
@@ -232,16 +149,263 @@ int symbToBin(symbolTable *symb){
     return ((symb->address + (symb->iscmd == NOT_CMD2 && symb->position == RELOCATABLE?offset:0))<<2) | symb->position;
 }
 
-void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, enum ErrorTypes * errCode) {
+
+
+void free_symtree(symbolTable* node) {
+    if (node == NULL)
+        return;
+    if (node->right == NULL && node->left == NULL)
+        free(node);
+    else {
+        free_symtree(node->right);
+        free_symtree(node->left);
+    }
+}
+
+
+
+void free_symbtable(void){
+    free_symtree(symbolTab_head);
+    symbolTab_tail = symbolTab_head = NULL;
+}
+
+
+
+
+
+/***********************************************************/
+/*              Data Array Handling Functions             *
+ * ********************************************************/
+
+
+ErrorTypes updateData(char *directive,char *op_string){
+
+    char arg1[MAX_LINE],arg2[MAX_LINE];
+    char *param;
+    int bitword, mat_word_size = 0;
+    if(strcmp(directive,"data") == 0){
+        param = safe_strtok(op_string,",NULL");
+
+        do {
+            if (param == NULL || !is_num(param)) {
+                return ERR_INV_DATA_PARAM;
+            }
+            bitword = atoi(param);
+            if (!valid_num_val(bitword)) {
+                return ERR_INV_DATA_SIZE;
+            }
+            if (bitword < 0)
+                bitword = ~(bitword * -1) + 1;
+            data[dc++] = (unsigned) bitword;
+        } while ((param = safe_strtok(NULL,",NULL")) != NULL);
+
+    } else if(strcmp(directive,"string") == 0){
+        param = safe_strtok(op_string,"");
+        if(param == NULL || !is_string(param)){
+            return ERR_INV_STRING_PARAM;
+        }
+        param[strlen(param)-1] = '\0';
+        param = &param[1];
+        while(*param)
+            data[dc++] = (unsigned) *(param++);
+
+        data[dc++] = '\0';
+
+    } else if(strcmp(directive,"mat") == 0){
+        param = safe_strtok(op_string," ");
+        if(!valid_mat_init(param)){
+            return ERR_INV_MAT_INIT;
+        }
+        cpy_mat_vals(param,arg1,arg2);
+        mat_word_size = atoi(arg1)*atoi(arg2);
+
+        while ((param = safe_strtok(NULL,",NULL")) != NULL){
+            if(mat_word_size <= 0)
+                return ERR_EXSS_MAT_VAL;
+            mat_word_size--;
+            if (!is_num(param)) {
+                return ERR_INV_MAT_PARAM;
+            }
+            bitword = atoi(param);
+            if (!valid_num_val(bitword)) {
+                return ERR_INV_MAT_PARAM_SIZE;
+            }
+            if (bitword < 0)
+                bitword = ~(bitword * -1) + 1;
+            data[dc++] = (unsigned) bitword;
+        }
+        while(mat_word_size--)
+            dc++;
+    }
+    return NO_ERR_OCCURRED;
+}
+
+
+int getDc(void){
+    return dc;
+}
+
+
+void set_offset(void){
+    offset = ic-STARTING_ADD;
+}
+
+
+void clear_data_stacks(void){
+    while(dc > STARTING_ADD)
+        data[dc--] = 0;
+    while(ic > STARTING_ADD)
+        data[ic--] = 0;
+    data[dc] = 0;
+    data[ic] = 0;
+}
+
+/***********************************************************/
+/*              Code Array Handling Functions             *
+ * ********************************************************/
+
+
+ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
+    ErrorTypes errCode;
+    AddressModeType srcop_mode, destop_mode;
+    int i;
+
+    destop_mode = getAddMode(dest_op);
+    srcop_mode = getAddMode(src_op);
+
+    if ((errCode = valid_address_mode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
+        return errCode;
+
+    /* coding the command to a bit-word and updating the array */
+    for (i = 0; i < NUM_OF_CMDS; i++) {
+        if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
+            code[ic] |= COMMANDS[i].code << 6;  /* 6-9 bits */
+            break;
+        }
+    }
+    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : (int)srcop_mode) << 4;   /* 4-5 bits */
+    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : (int)destop_mode) << 2;     /* 2-3 bits */
+
+
+    strToBinWord(src_op, srcop_mode, SRC_OP, passage, &errCode);      /* inserts source operand as a bit-word */
+    strToBinWord(dest_op, destop_mode, DEST_OP, passage, &errCode);       /* inserts dest operand as a bit-word */
+
+    ic++;
+    return errCode;
+}
+
+int getIc(void){
+    return ic;
+}
+
+
+/**
+ * Clears the code array
+ */
+void clear_code_arr() {
+    memset(code, 0, sizeof(code));
+}
+
+
+
+/***********************************************************/
+/*              File Exporting Functions                   *
+ * ********************************************************/
+
+
+void create_ob_file(char *fileName){
+    FILE *outf;
+    unsigned i;
+    char outFileName[FILENAME_MAX];
+    char word[WORD_LEN + 1];
+    char address[ADDRESS_LEN + 1];
+    strcpy(outFileName,fileName);
+
+    if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
+    {
+        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+    for(i = STARTING_ADD;i<ic;i++){
+        binToWeirdFour(i,address,ADDRESS_LEN);
+        fprintf(outf,"%.4s\t",address);
+        binToWeirdFour(code[i],word,WORD_LEN);
+        fprintf(outf,"%.5s\n",word);
+    }
+    for(i = STARTING_ADD;i<dc;i++){
+        binToWeirdFour(i+offset,address,ADDRESS_LEN);
+        fprintf(outf,"%.4s\t",address);
+        binToWeirdFour(data[i],word,WORD_LEN);
+        fprintf(outf,"%.5s\n",word);
+    }
+
+    fclose(outf);
+}
+
+void create_ext_file(char *fileName){
+    int i = 0;
+    FILE *outf;
+    char outFileName[MAX_FILE_NAME];
+    char address[ADDRESS_LEN + 1];
+    strcpy(outFileName,fileName);
+    if((outf = fopen(strcat(outFileName,OUT_EXT),"w")) == NULL)
+    {
+        fprintf(stderr,"Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+    for(i = 0;i<extref_ind;i++) {
+        binToWeirdFour(extref[i].address,address,ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", extref[i].label, address);
+    }
+    fclose(outf);
+}
+
+void print_ent(FILE *outf,symbolTable *symnode){
+    static char address[ADDRESS_LEN+1];
+    if(symnode == NULL)
+        return;
+    else if(symnode->format == ENTRY) {
+        binToWeirdFour(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE?offset:0),address,ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", symnode->label,address);
+    }
+    print_ent(outf,symnode->right);
+    print_ent(outf,symnode->left);
+
+}
+
+void create_ent_file(char *fileName){
+    FILE *outf;
+    char outFileName[MAX_FILE_NAME];
+    strcpy(outFileName,fileName);
+    if((outf = fopen(strcat(outFileName,OUT_ENT),"w")) == NULL)
+    {
+        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
+        exit(EXIT_FAILURE);
+    }
+
+    print_ent(outf,symbolTab_head);
+
+    fclose(outf);
+}
+
+
+/***********************************************************/
+/*              Miscellaneous Functions                    *
+ * ********************************************************/
+
+
+
+void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, ErrorTypes * errCode) {
+    char label[MAX_LINE] = "";
+    char arg1[MAX_LINE], arg2[MAX_LINE];
+    symbolTable *symbolId;
     int bits = 0;
     static struct {
         unsigned is_srcop_reg:2;
         unsigned is_destop_reg:2;
     } flag = {FALSE, FALSE};
+
     if (op_type == SRC_OP) flag.is_srcop_reg = FALSE;
-    symbolTable *symbolId;
-    char label[MAX_LINE] = "";
-    char arg1[MAX_LINE], arg2[MAX_LINE];
 
     switch (mode) {
         case ADDMODE_IMMEDIATE:
@@ -267,7 +431,7 @@ void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, enu
             else if (passage == SECOND_PASS) {
                 code[++ic] |= symbToBin(get_symbolId(label));
             }
-            cpyMatVals(str, arg1, arg2);
+            cpy_mat_vals(str, arg1, arg2);
             code[++ic] |= (atoi(&arg1[1]) << 6) | atoi(&arg2[1]) << 2;
             break;
         case ADDMODE_REG:
@@ -286,55 +450,16 @@ void strToBinWord(char *str, AddressModeType mode, int op_type, int passage, enu
 
 }
 
-void set_offset(void){
-    offset = ic-STARTING_ADD;
+/**
+ * Frees the external reference
+ */
+void freeExtRef() {
+    extref_ind = 0;
+    memset(&extref, 0, sizeof(extref));
 }
 
-enum ErrorTypes updateIc(char *cmd, char *src_op, char *dest_op, int passage) {
-    enum ErrorTypes errCode = NO_ERR_OCCURRED;
-    int word, i;
-    char *str;
-    AddressModeType srcop_mode, destop_mode;
 
-    destop_mode = getAddMode(dest_op);
-    srcop_mode = getAddMode(src_op);
-
-    if ((errCode = isValidAddressMode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
-        return errCode;
-
-    /* coding the command to a bit-word and updating the array */
-    for (i = 0; i < NUM_OF_CMDS; i++) {
-        if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
-            code[ic] |= COMMANDS[i].code << 6;  /* 6-9 bits */
-            break;
-        }
-    }
-    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : srcop_mode) << 4;   /* 4-5 bits */
-    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : destop_mode) << 2;     /* 2-3 bits */
-
-
-    strToBinWord(src_op, srcop_mode, SRC_OP, passage, &errCode);      /* inserts source operand as a bit-word */
-    strToBinWord(dest_op, destop_mode, DEST_OP, passage, &errCode);       /* inserts dest operand as a bit-word */
-
-    ic++;
-    return errCode;
-}
-
-int getIc(void){
-    return ic;
-}
-
-int getDc(void){
-    return dc;
-}
-
-int exist_label(char *label){
-    symbolTable *ptr = symbolTab_head;
-    while(ptr)
-        if(strcmp(ptr++->label,label) == 0)
-            return TRUE;
-    return FALSE;
-}
+/********************************************************************************************/
 
 /* to use the tester, create 3 files that should be tested against. with a postfix of .test
          * for example filename.as.test or filename.ent.test */
@@ -357,8 +482,8 @@ void test(char *filename1){
         testob2 = fopen(strcat(filename, ".test"), "r");
         j = STARTING_ADD;
         if (testob1 == NULL || testob2 == NULL)
-            exit(1);
-        printf("\n****************************************************\n\nComparing %s Files:\n\n",&str[1]);
+            return;
+        printf("\n****************************************************\n\nComparing %s %s Files:\n\n",filename1,&str[1]);
         while (fgets(s1, 100, testob1) && fgets(s2, 100, testob2)) {
             \
         if (strchr(s1, '\n'))
@@ -375,105 +500,14 @@ void test(char *filename1){
             j++;
         }
         i--;
+        fclose(testob1);
+        fclose(testob2);
     }
     printf("\n");
-}
-
-void clear_data_stacks(void){
-    while(dc > STARTING_ADD)
-        data[dc--] = 0;
-    while(ic > STARTING_ADD)
-        data[ic--] = 0;
-    data[dc] = 0;
-    data[ic] = 0;
-}
-
-void free_symtree(symbolTable* node) {
-    if (node == NULL)
-        return;
-    if (node->right == NULL && node->left == NULL)
-        free(node);
-    else {
-        free_symtree(node->right);
-        free_symtree(node->left);
-    }
-}
-
-void free_symbtable(void){
-    free_symtree(symbolTab_head);
-    symbolTab_tail = symbolTab_head = NULL;
-}
-
-void create_ob_file(char *fileName){
-    FILE *outf;
-    char outFileName[FILENAME_MAX];
-    char word[WORD_LEN + 1];
-    char address[ADDRESS_LEN + 1];
-    strcpy(outFileName,fileName);
-    int i;
-    if((outf = fopen(strcat(outFileName,OUT_OB),"w")) == NULL)
-    {
-        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
-        exit(EXIT_FAILURE);
-    }
-    for(i = STARTING_ADD;i<ic;i++){
-        binToWierdFour(i,address,ADDRESS_LEN);
-        fprintf(outf,"%.4s\t",address);
-        binToWierdFour(code[i],word,WORD_LEN);
-        fprintf(outf,"%.5s\n",word);
-    }
-    for(i = STARTING_ADD;i<dc;i++){
-        binToWierdFour(i+offset,address,ADDRESS_LEN);
-        fprintf(outf,"%.4s\t",address);
-        binToWierdFour(data[i],word,WORD_LEN);
-        fprintf(outf,"%.5s\n",word);
-    }
-
-    fclose(outf);
-}
-
-void create_ext_file(char *fileName){
-    int i = 0;
-    FILE *outf;
-    char outFileName[MAX_FILE_NAME];
-    char address[ADDRESS_LEN + 1];
-    strcpy(outFileName,fileName);
-    if((outf = fopen(strcat(outFileName,OUT_EXT),"w")) == NULL)
-    {
-        fprintf(stderr,"Could not write to %s","%s");
-        exit(EXIT_FAILURE);
-    }
-    for(i = 0;i<extref_ind;i++) {
-        binToWierdFour(extref[i].address,address,ADDRESS_LEN);
-        fprintf(outf, "%s\t%s\n", extref[i].label, address);
-    }
-    fclose(outf);
-}
-
-void print_ent(FILE *outf,symbolTable *symnode){
-    static char address[ADDRESS_LEN+1];
-    if(symnode == NULL)
-        return;
-    else if(symnode->format == ENTRY) {
-        binToWierdFour(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE?offset:0),address,ADDRESS_LEN);
-        fprintf(outf, "%s\t%s\n", symnode->label,address);
-    }
-    print_ent(outf,symnode->right);
-    print_ent(outf,symnode->left);
 
 }
 
-void create_ent_file(char *fileName){
-    FILE *outf;
-    char outFileName[MAX_FILE_NAME];
-    strcpy(outFileName,fileName);
-    if((outf = fopen(strcat(outFileName,OUT_ENT),"w")) == NULL)
-    {
-        LOG_TRACE(LOG_ERROR, "Could not write to %s","%s");
-        exit(EXIT_FAILURE);
-    }
 
-    print_ent(outf,symbolTab_head);
 
-    fclose(outf);
-}
+
+

@@ -3,14 +3,15 @@
 
 
 #include <stdio.h>
+#include "error_handler.h"
 
 #define MAX_LINE 81
 
 enum{FIRST_PASS, SECOND_PASS};
 /* TODO: might want to consider making the return type err_t , thus making the error process more natural */
 
-enum ErrorTypes parse_file(FILE *inpf,int passage);
+ErrorTypes parse_file(FILE *inpf,int passage);
 
 void export_assembly_files(char *outName);
 
-#endif //ENDPROJECT_ASSEMBLER_H
+#endif /*ENDPROJECT_ASSEMBLER_H*/

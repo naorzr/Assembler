@@ -1,5 +1,5 @@
-  ; file ps.as
-.entry LOOP
+; file ps.as
+.laskgfl LOOP
 .entry LENGTH
 .extern L3
 .extern W

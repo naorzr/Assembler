@@ -8,7 +8,7 @@
  * @param lineNum Line Number
  * @param line Line Content
  */
-void print_error(enum ErrorTypes err, int lineNum, char *line){
+void print_error(ErrorTypes err, int lineNum, char *line){
     char errTemplate[] = "Error: %s in line number %d, line content: %s\n";
     char errMsg[100];
 

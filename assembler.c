@@ -1,13 +1,11 @@
 #include "assembler.h"
 #include "data_struct.h"
-#include <string.h>
-#include "error_handler.h"
 #include "helpers.h"
 #include "logger.h"
 
 static int lineNum;
 char* get_line_content(FILE *inpf);
-enum ErrorTypes parse_line(char *lineContent,int passage);
+ErrorTypes parse_line(char *lineContent,int passage);
 
 /**
  * Takes in a file and parse all the content, translating it to binary code and storing it in the relevant data structs
@@ -15,12 +13,12 @@ enum ErrorTypes parse_line(char *lineContent,int passage);
  * @param passage Type of passage (first/second)
  * @return In case of an error returns the specific type of error
  */
-enum ErrorTypes parse_file(FILE *inpf, int passage) {
+ErrorTypes parse_file(FILE *inpf, int passage) {
     struct {
         unsigned stop: 2;
     } flag = {FALSE};
     char *lineContent;
-    enum ErrorTypes error;
+    ErrorTypes error;
     lineNum = 0;
     /* clears data/code and symbol table */
     if (passage == FIRST_PASS) {
@@ -46,16 +44,16 @@ enum ErrorTypes parse_file(FILE *inpf, int passage) {
 }
 
 /**
- * Parse each word in the line, storing it in the relavent data struct and converting to binary if needed
+ * Parse each word in the line, storing it in the relevant data struct and converting to binary if needed
  * @param lineContent
  * @param passage
  * @return error type in case of an error
  */
-enum ErrorTypes parse_line(char *lineContent,int passage) {
+ErrorTypes parse_line(char *lineContent,int passage) {
     int dc, ic;
     char label[MAX_LINE] = "", cmd[MAX_LINE] = "", directive[MAX_LINE] = "", op1[MAX_LINE] = "", op2[MAX_LINE] = "";
     char *word;
-    enum ErrorTypes errCode = NO_ERR_OCCURRED;
+    ErrorTypes errCode = NO_ERR_OCCURRED;
     const char comma[] = " ,\t";
     struct {
         unsigned label: 2;
@@ -67,7 +65,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         return NO_ERR_OCCURRED;
     if((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
         return NO_ERR_OCCURRED;
-    if (!validateCommas(lineContent)) /* validate that there are no extra commas */
+    if (!valid_commas(lineContent)) /* validate that there are no extra commas */
         return ERR_INV_EXTRA_COMMA;
 
     if (LABEL_DEC(word)) {               /* case of label declaration */
@@ -79,7 +77,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         if((word = safe_strtok(NULL, " \t")) == NULL)
             return ERR_EXPECTED_ARG;
     }
-    if (IS_DIRECTIVE(word)) {       /* case of a directive, in our project a directive is prefixed by a dot*/
+    if (Is_Directive(word)) {       /* case of a directive, in our project a directive is prefixed by a dot*/
         strcpy(directive, &word[1]);
         if (is_dsm(directive)) {      /* case it's a .data/.string/.mat directive */
             if (is_dsm(directive)) {
@@ -87,9 +85,8 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
                     errCode = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
                 if (errCode != NO_ERR_OCCURRED)
                     return errCode;
-                if (word = safe_strtok(NULL, "")) {
-
-                }
+                if ((word = safe_strtok(NULL, "")) == NULL)
+                {/* TODO NAOR: need to do something here */}
                 strcpy(op1, word);
                 errCode = updateData(directive, op1);
             }
@@ -108,7 +105,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
                 errCode = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
 
         }
-    } else if (isCmd(word)) {         /* case of a command*/
+    } else if (is_cmd(word)) {         /* case of a command*/
         strcpy(cmd, word);
 
         if (flag.label == TRUE && passage == FIRST_PASS)
@@ -117,9 +114,9 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
         if (errCode != NO_ERR_OCCURRED)
             return errCode;
 
-        if (word = safe_strtok(NULL, comma))
+        if ((word = safe_strtok(NULL, comma)) != NULL)
             strcpy(op1, word);
-        if (word = safe_strtok(NULL, comma))
+        if ((word = safe_strtok(NULL, comma)) != NULL)
             strcpy(op2, word);
 
         if (strcmp(op2, "") == 0)
@@ -132,7 +129,7 @@ enum ErrorTypes parse_line(char *lineContent,int passage) {
 
     LOG_TRACE(LOG_DEBUG,
               "[DEBUG] line content: %s,\n\tlabel: %s,\n\tcommand: %s,\n\tdirective: %s\n\top1: %s,\n\top2: %s\n",
-              lineContent == NULL ? "" : lineContent, label, cmd, directive,
+              lineContent, label, cmd, directive,
               op1, op2);
 
     return errCode;
@@ -147,6 +144,7 @@ void export_assembly_files(char *outName){
     create_ob_file(outName);
     create_ext_file(outName);
     create_ent_file(outName);
+    test(outName);
 }
 
 /**

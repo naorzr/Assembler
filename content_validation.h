@@ -1,66 +1,54 @@
-//
-// Created by naortif on 7/24/17.
-//
+
 #ifndef ENDPROJECT_CONTENT_VALIDATION_H
 #define ENDPROJECT_CONTENT_VALIDATION_H
 
 #include <string.h>
 #include "data_struct.h"
 
-enum {OFF,ON};
-enum {FALSE = 0,TRUE = 1};
-typedef enum {
+enum {OFF};
+enum {FALSE,TRUE};
+
+typedef enum AddressModeType{
     ADDMODE_INVALID = -2,
     ADDMODE_NO_OPERAND = -1,
     ADDMODE_IMMEDIATE = 0,
     ADDMODE_DIRECT = 1,
     ADDMODE_MATRIX = 2,
-    ADDMODE_REG = 3,
-    } AddressModeType;
+    ADDMODE_REG = 3
+} AddressModeType;
 
 #define Is_External(label) strcmp((label),"extern") == 0
 #define Is_Entry(label)     strcmp((label),"entry") == 0
 #define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
-#define IS_DIRECTIVE(word)     (word)[0] == '.'
+#define Is_Directive(word)     (word)[0] == '.'
 
-//typedef enum err_t{
-//    E_SUCCESS = 1,
-//    E_LABEL_REDEC,    /* label redeclaration */
-//    E_INVALID_LABEL,
-//    E_INVALID_SRC_OP,
-//    E_INVALID_DEST_OP,
-//    E_INVALID_SRCOP_ADDMODE,
-//    E_INVALID_DESTOP_ADDMODE,
-//
-//}err_t;
 
-int isReg(char *word);
-
-int is_immediate(char *op);
 
 int is_label(char *label);
 
 int is_dsm(char *word);
 
-int isCmd(char *word);
+int is_cmd(char *word);
 
-int isString(char *str);
+int is_reg(char *word);
 
-int isNum(char *str);
+int is_string(char *str);
 
-int cpyMatVals(const char *mat,char *arg1,char *arg2);
+int is_num(char *str);
 
-int isValidMat(char *str);
+int valid_pos_num(char *str);
 
-int getAddMode(char *op);
+int valid_num_val(int num);
 
-enum ErrorTypes isValidAddressMode(char *cmd,AddressModeType src_op, AddressModeType dest_op);
+int valid_mat_init(char *mat);
 
-int validMatInitializer(const char *mat);
+int is_mat(char *str);
 
-int isValidPositiveNum(char *str);
+int valid_commas(char *str);
 
-int validateCommas(char *str);
+int is_immediate(char *op);
+
+ErrorTypes valid_address_mode(char *cmd,AddressModeType src_op, AddressModeType dest_op);
 
 
-#endif //ENDPROJECT_CONTENT_VALIDATION_H
+#endif /*ENDPROJECT_CONTENT_VALIDATION_H*/
