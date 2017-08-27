@@ -9,7 +9,7 @@
  * @param line Line Content
  */
 void print_error(ErrorTypes err, int lineNum, char *line){
-    char errTemplate[] = "Error: %s in line number %d, line content: %s\n";
+    char errTemplate[] = "Error in line %d: %s, line content: %s\n";
     char errMsg[100];
 
     switch (err) {
@@ -78,5 +78,5 @@ void print_error(ErrorTypes err, int lineNum, char *line){
             break;
     }
 
-    LOG_TRACE(LOG_ERROR, errTemplate, errMsg, lineNum, line);
+    LOG_TRACE(LOG_ERROR, errTemplate, lineNum, errMsg, line);
 }
