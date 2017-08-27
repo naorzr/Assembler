@@ -53,7 +53,7 @@ int is_string(char *str){
 int valid_pos_num(char *str) {
     if (is_num(str)) {
         int num = atoi(str);
-        if (num >= 0 && num < 512) {        /* TODO BARAK: please replace 512 with a macro or enum */
+        if (num >= MIN_POS_INT && num < MAX_POS_INT) {
             return TRUE;
         }
     }
@@ -253,6 +253,6 @@ ErrorTypes valid_address_mode(char *cmd, AddressModeType src_op, AddressModeType
  * @return
  */
 int valid_num_val(int num) {
-    return num < 512 && num > -512; /* TODO BARAK: same here. needs to replace number with a macro or enum */
+    return num < MAX_POS_INT && num > MAX_NEG_INT;
 }
 

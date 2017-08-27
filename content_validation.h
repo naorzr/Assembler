@@ -21,6 +21,9 @@ typedef enum AddressModeType{
 #define Is_Entry(label)     strcmp((label),"entry") == 0
 #define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
 #define Is_Directive(word)     (word)[0] == '.'
+#define MIN_POS_INT 0
+#define MAX_POS_INT 512
+#define MAX_NEG_INT -512
 
 
 
