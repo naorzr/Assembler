@@ -97,7 +97,7 @@ ErrorTypes updateSymbolTable(char *label, int address, int position, int format,
     symbolTab_tail = symbolTab_head;
 
     /* inserting the node into the bin-tree */
-    LOOP {
+    while(symbolTab_tail != NULL) {
         /* case a symbol with identical name was found will be considered an error unless
          * it is an entry/extern declaration*/
         if (strcmp(symbolTab_tail->label, node->label) == 0) {
@@ -125,7 +125,7 @@ ErrorTypes updateSymbolTable(char *label, int address, int position, int format,
                 symbolTab_tail = symbolTab_tail->right;
         }
     }
-
+    return ERR_LABEL_REDECLARED;
 
 }
 
@@ -161,8 +161,11 @@ int symbToBin(symbolTable *symb){
 }
 
 
-
-void free_symtree(symbolTable* node) {
+/**
+ * internal function, frees the symboltable from a given point
+ * @param node head of a binary tree to free
+ */
+static void free_symtree(symbolTable* node) {
     if (node == NULL)
         return;
     if (node->right == NULL && node->left == NULL)
@@ -174,7 +177,9 @@ void free_symtree(symbolTable* node) {
 }
 
 
-
+/**
+ * frees the whole symbol table, send in to the internal function free_symtree the symbol table head.
+ */
 void free_symbtable(void){
     free_symtree(symbolTab_head);
     symbolTab_tail = symbolTab_head = NULL;
@@ -188,7 +193,12 @@ void free_symbtable(void){
 /*              Data Array Handling Functions             *
  * ********************************************************/
 
-
+/**
+ * updates the data array with the binary representation of the given operand
+ * @param directive
+ * @param op_string
+ * @return
+ */
 ErrorTypes updateData(char *directive,char *op_string){
 
     char arg1[MAX_LINE],arg2[MAX_LINE];
