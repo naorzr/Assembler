@@ -21,13 +21,13 @@ int main(int argc, char **argv) {
     int i = 0;
     FILE *inpf;
     if (argc < 2) {
-        LOG_TRACE(LOG_ERROR, "No Files Were Passed\n");
+        LOG_TRACE(LOG_ERROR, "No Files Were Passed\nPlease pass a file name, files should contain a %s postfix\n",IN_EXT);
         return 1;
     }
     for (i = 1; i < argc; i++) {
-        strcat(strcpy(fileName, argv[i]), AS_EXT);        /* copies file name with the input postfix(".as") */
+        strcat(strcpy(fileName, argv[i]), IN_EXT);        /* copies file name with the input postfix(".as") */
         if ((inpf = fopen(fileName, "r")) == NULL) {
-            LOG_TRACE(LOG_ERROR, "Error reading file: %s\n", fileName);
+            LOG_TRACE(LOG_ERROR, "Error could not open file: %s\nPlease make sure you passed a valid file name and that the file has %s ending\n", argv[i], IN_EXT);
             continue;
         }
         if (parse_file(inpf, FIRST_PASS) != NO_ERR_OCCURRED) {

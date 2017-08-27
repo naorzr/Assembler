@@ -57,17 +57,16 @@ const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "
 static symbolTable *symbolTab_head = NULL,*symbolTab_tail = NULL;
 
 
-static unsigned dc = STARTING_ADD;
-static unsigned ic = STARTING_ADD;
-static unsigned extref_ind = 0;
-static unsigned offset = 0;
-
-static unsigned code[MAX_FILE_SIZE] = {0};
-static unsigned data[MAX_FILE_SIZE] = {0};
+static unsigned dc = STARTING_ADD;      /* data array address */
+static unsigned ic = STARTING_ADD;      /* code array address */
+static unsigned code[MAX_FILE_SIZE] = {0};  /* code array, stores all the command sentences data */
+static unsigned data[MAX_FILE_SIZE] = {0};  /* data array, stores all the directive sentences data */
+static unsigned offset;     /* offset value used for adjusting data array address */
 static struct{
     const char * label;
     unsigned int address;
-} extref[MAX_FILE_SIZE] = {0};
+} extref[MAX_FILE_SIZE] = {0};      /* stores the label and its appearences */
+static unsigned extref_ind = 0;
 
 
 
@@ -97,9 +96,10 @@ ErrorTypes updateSymbolTable(char *label, int address, int position, int format,
 
     symbolTab_tail = symbolTab_head;
 
+    /* inserting the node into the bin-tree */
     LOOP {
-        if (strcmp(symbolTab_tail->label, node->label) == 0) {      /* case a symbol was found */
-            if(format == ENTRY) {
+        if (strcmp(symbolTab_tail->label, node->label) == 0) {      /* case a symbol with identical name was found */
+            if(format == ENTRY) {               /* if it's an entry than it wont be considered an error, updating label position */
                 symbolTab_tail->format = ENTRY;
                 symbolTab_tail->position |= position;
                 return NO_ERR_OCCURRED;
@@ -125,7 +125,10 @@ ErrorTypes updateSymbolTable(char *label, int address, int position, int format,
 
 }
 
-
+/** get_symbolId: get the user the symbol node matching the label passed
+ * @param label label's name to search for
+ * @return symbol table node in case it has found a match, NULL otherwise
+ * */
 symbolTable *get_symbolId(char *label){
     symbolTable *node = symbolTab_head;
     while(node){
@@ -139,7 +142,11 @@ symbolTable *get_symbolId(char *label){
     return NULL;
 }
 
-
+/**
+ * convert the symbol node into the appropriate binary code
+ * @param symb a symbol node to convert
+ * @return a binary representation of the symbol node address and position in binary
+ */
 int symbToBin(symbolTable *symb){
     if(symb->position == EXTERNAL) {
         extref[extref_ind].address = ic+1;
