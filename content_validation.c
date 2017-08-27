@@ -159,8 +159,8 @@ int is_immediate(char *op) {
 /**
  * Validates commas validity
  * e.g. cmp r1,,r2 or .mat [2][2] 1,2,3,4, are illigal
- * @param str
- * @return
+ * @param str line as string
+ * @return True if the commas in the line are valid
  */
 int valid_commas(char *str) {
     unsigned len = strlen(str);
@@ -168,7 +168,7 @@ int valid_commas(char *str) {
             commaCount = 0,
             inString = FALSE;
 
-    for(i=0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         if (str[i] == '"')
             inString = !inString;
         if (inString == TRUE)
