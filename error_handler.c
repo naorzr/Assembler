@@ -13,28 +13,28 @@ void print_error(ErrorTypes err, int lineNum, char *line){
     char errMsg[100];
 
     switch (err) {
-        case ERR_LABEL:
+        case E_LABEL:
             strcpy(errMsg, "Invalid label");
             break;
-        case ERR_EXPECTED_ARG:
+        case E_EXPECTED_ARG:
             strcpy(errMsg, "Expected argument");
             break;
-        case ERR_EXPECTED_LABEL:
+        case E_EXPECTED_LABEL:
             strcpy(errMsg,"Expected a label");
             break;
-        case ERR_INV_WORD:
+        case E_INV_WORD:
             strcpy(errMsg, "Invalid word");
             break;
-        case ERR_INV_EXTRA_COMMA:
+        case E_INV_EXTRA_COMMA:
             strcpy(errMsg, "Excessive commas found");
             break;
-        case ERR_INV_DIRECTIVE:
+        case E_INV_DIRECTIVE:
             strcpy(errMsg, "Invalid directive");
             break;
-        case ERR_STOP:
+        case E_STOP:
             strcpy(errMsg, "Expected argument");
             break;
-        case ERR_LABEL_REDECLARED:
+        case E_LABEL_REDECLARED:
             strcpy(errMsg, "Duplicate label declaration");
             break;
         case E_INVALID_SRCOP_ADDMODE:
@@ -43,25 +43,25 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_INVALID_DESTOP_ADDMODE:
             strcpy(errMsg, "Invalid Destination Operand");
             break;
-        case ERR_INV_DATA_PARAM:
+        case E_INV_DATA_PARAM:
             strcpy(errMsg, "Invalid data parameter");
             break;
-        case ERR_INV_DATA_SIZE:
+        case E_INV_DATA_SIZE:
             strcpy(errMsg, "Data overflow (exceeds the 10 bit size)");
             break;
-        case ERR_INV_STRING_PARAM:
+        case E_INV_STRING_PARAM:
             strcpy(errMsg, "Invalid string parameter");
             break;
-        case ERR_INV_MAT_PARAM:
+        case E_INV_MAT_PARAM:
             strcpy(errMsg, "Invalid matrix parameter");
             break;
-        case ERR_INV_MAT_INIT:
+        case E_INV_MAT_INIT:
             strcpy(errMsg, "Invalid matrix initializer");
             break;
-        case ERR_INV_MAT_PARAM_SIZE:
+        case E_INV_MAT_PARAM_SIZE:
             strcpy(errMsg, "Matrix data overflow (exceeds the 10 bit size)");
             break;
-        case ERR_EXSS_MAT_VAL:
+        case E_EXSS_MAT_VAL:
             strcpy(errMsg, "Excessive matrix values");
             break;
         case E_MISS_OP:
@@ -70,7 +70,7 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_UNDECLARED_SYMBOL:
             strcpy(errMsg, "Undeclared symbol");
             break;
-        case ERR_DATA_MISSING_ARG:
+        case E_DATA_MISSING_ARG:
             strcpy(errMsg, "Data missing argument");
             break;
         default:
@@ -78,5 +78,5 @@ void print_error(ErrorTypes err, int lineNum, char *line){
             break;
     }
 
-    LOG_TRACE(LOG_ERROR, errTemplate, lineNum, errMsg, line);
+    log_trace(LOG_ERROR, errTemplate, lineNum, errMsg, line);
 }

@@ -12,7 +12,7 @@
  * @param fmt
  * @param ... accepts 1 and more arguments like printf
  */
-void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ...) {
+void log_trace(LogLevel lvl, char *fmt, ...) {
     va_list list;
     char *s, c;
     int i;

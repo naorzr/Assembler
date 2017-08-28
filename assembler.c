@@ -41,13 +41,13 @@ ErrorTypes parse_file(FILE *inpf, int passage) {
             flag.stop = TRUE;
         }
     }
-    return flag.stop == TRUE? ERR_STOP: NO_ERR_OCCURRED;    /* if an error has occurred tells the program to halt from going into second pass */
+    return flag.stop == TRUE? E_STOP: NO_ERR_OCCURRED;    /* if an error has occurred tells the program to halt from going into second pass */
 }
 
 /**
  * Parse each word in the line, storing it in the relevant data struct and converting to binary if needed
- * @param lineContent
- * @param passage
+ * @param lineContent line to parse
+ * @param passage current passage of the program on the current line(first pass or second)
  * @return error type in case of an error
  */
 ErrorTypes parse_line(char *lineContent, int passage) {
@@ -59,59 +59,76 @@ ErrorTypes parse_line(char *lineContent, int passage) {
     struct {
         unsigned label: 2;
     } flag = {0};
-    dc = getDc();
-    ic = getIc();
+    dc = get_dc();
+    ic = get_ic();
 
-    if (lineContent[0] == ';')       /* case of a comment line */
+    /* case of a comment line */
+    if (lineContent[0] == ';')
         return NO_ERR_OCCURRED;
-    if ((word = safe_strtok(lineContent, " \t")) == NULL)   /* case of an empty line */
+
+    /* case of an empty line */
+    if ((word = safe_strtok(lineContent, " \t")) == NULL)
         return NO_ERR_OCCURRED;
     if (!valid_commas(lineContent)) /* validate that there are no extra commas */
-        return ERR_INV_EXTRA_COMMA;
+        return E_INV_EXTRA_COMMA;
 
-    if (LABEL_DEC(word)) {               /* case of label declaration */
+    /* case of label declaration */
+    if (LABEL_DEC(word)) {
         word[strlen(word)-1] = '\0';
         strcpy(label, word);
         if (!is_label(label))
-            return ERR_LABEL;
+            return E_LABEL;
         flag.label = TRUE;
         if ((word = safe_strtok(NULL, " \t")) == NULL)
-            return ERR_EXPECTED_ARG;
+            return E_EXPECTED_ARG;
     }
-    if (Is_Directive(word)) {       /* case of a directive, in our project a directive is prefixed by a dot*/
+    /* case of a directive, in our project a directive is prefixed by a dot*/
+    if (Is_Directive(word)) {
         strcpy(directive, &word[1]);
-        if (is_dsm(directive)) {      /* in case it's a .data/.string/.mat directive */
-            if (is_dsm(directive)) {
-                if (flag.label && passage == FIRST_PASS)
-                    errCode = updateSymbolTable(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
-                if (errCode != NO_ERR_OCCURRED)
-                    return errCode;    /* could not update symbol table due to some error */
-                if ((word = safe_strtok(NULL, "")) == NULL)
-                    return ERR_DATA_MISSING_ARG;  /* missing argument after .data declaration */
-                strcpy(op1, word);
-                errCode = updateData(directive, op1);
-            }
-        } else if (Is_External(directive)) { /* in case it's an external declaration */
-            if ((word = safe_strtok(NULL, " \t")) == NULL)
-                return ERR_EXPECTED_LABEL;  /* missing label after external declaration */
-            strcpy(label, word);
-            if (passage == FIRST_PASS)
-                errCode = updateSymbolTable(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
 
-        } else if (Is_Entry(directive)) { /* in case it's an entry declaration */
+        /* in case it's a data/string/mat - (dsm) directive */
+        if (is_dsm(directive)) {
+            if (flag.label && passage == FIRST_PASS)    /* if there is a label declaration insert label into symbol table */
+                errCode = insert_to_symtab(label, dc, RELOCATABLE, NONE_ENTRY, NOT_CMD2);
+
+            if (errCode != NO_ERR_OCCURRED)
+                return errCode;    /* could not insert to symbol table due to some error */
+
+            if ((word = safe_strtok(NULL, "")) == NULL)
+                return E_DATA_MISSING_ARG;  /* missing argument after .data declaration */
+
+            strcpy(op1, word);
+            errCode = update_data(directive, op1);
+        }
+        /* case of external declaration */
+        else if (Is_External(directive)) {
+
             if ((word = safe_strtok(NULL, " \t")) == NULL || !is_label(word))
-                return ERR_EXPECTED_LABEL; /* invalid/missing label */
+                return E_EXPECTED_LABEL;  /* missing/invalid label after external directive */
+
+            strcpy(label, word);
+
+            if (passage == FIRST_PASS)
+                errCode = insert_to_symtab(label, EXTERNAL_ADDRESS, EXTERNAL, NONE_ENTRY, NOT_CMD2);
+        }
+        /* in case it's an entry declaration */
+        else if (Is_Entry(directive)) {
+
+            if ((word = safe_strtok(NULL, " \t")) == NULL || !is_label(word))
+                return E_EXPECTED_LABEL; /* missing/invalid label after entry directive */
+
             strcpy(label, word);
             if (passage == SECOND_PASS)
-                errCode = updateSymbolTable(label, dc, RELOCATABLE, ENTRY, NOT_CMD2);
-
+                errCode = update_sym_table(label, RELOCATABLE, ENTRY);
         }
-    } else if (is_cmd(word)) {         /* in case of a command*/
+    }
+    /* case of a command*/
+    else if (is_cmd(word)) {
         strcpy(cmd, word);
 
         /* in case of label preceding a command, update the symbol table */
         if (flag.label == TRUE && passage == FIRST_PASS)
-            errCode = updateSymbolTable(label, ic, RELOCATABLE, NONE_ENTRY, CMD2);
+            errCode = insert_to_symtab(label, ic, RELOCATABLE, NONE_ENTRY, CMD2);
 
         if (errCode != NO_ERR_OCCURRED)
             return errCode; /* could not update symbol table due to some error */
@@ -124,21 +141,15 @@ ErrorTypes parse_line(char *lineContent, int passage) {
             strcpy(op2, word);
 
         if (strcmp(op2, "") == 0)
-            errCode = updateIc(cmd, "", op1, passage);
+            errCode = update_code(cmd, "", op1, passage);
         else
-            errCode = updateIc(cmd, op1, op2, passage);
+            errCode = update_code(cmd, op1, op2, passage);
     }
-    /* check that there are no extra words preceding after the line*/
+    /* check that there are no extra words exceeding the line*/
     if (errCode == NO_ERR_OCCURRED && (safe_strtok(NULL, "")) != NULL)
-        return ERR_INV_WORD;
-
-    LOG_TRACE(LOG_DEBUG,
-              "[DEBUG] line content: %s,\n\tlabel: %s,\n\tcommand: %s,\n\tdirective: %s\n\top1: %s,\n\top2: %s\n",
-              lineContent, label, cmd, directive,
-              op1, op2);
+        return E_INV_WORD;
 
     return errCode;
-
 }
 
 /**
@@ -154,7 +165,7 @@ void export_assembly_files(char *outName){
 
 /**
  * Handles each line of the given file
- * @param inpf
+ * @param inpf input file to process
  * @return a pointer to the line
  */
 char* get_line_content(FILE *inpf){

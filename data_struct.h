@@ -17,7 +17,7 @@
 #define OUT_OB ".ob"
 #define IN_EXT ".as"
 #define MAX_FILE_NAME 256
-#define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (symbolTable *) safe_malloc(sizeof(symbolTable));\
+#define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (SymbolTable *) safe_malloc(sizeof(SymbolTable));\
                                                 strcpy(node->label,(lab));\
                                                 node->address = (add);\
                                                 node->position = (position);\
@@ -33,24 +33,24 @@ enum Positions{ABSOLUTE, EXTERNAL, RELOCATABLE};
 enum {EXTERNAL_ADDRESS = 0, ENTRY=10, NONE_ENTRY = 11,CMD2=4, NOT_CMD2=5};
 
 /* symbol table node */
-typedef struct symbolTable{
+typedef struct SymbolTable{
     char label[MAX_LINE];
     int address;
     int position;
     int format;
     int iscmd;
-    struct symbolTable *left;
-    struct symbolTable *right;
-}symbolTable;
+    struct SymbolTable *left;
+    struct SymbolTable *right;
+}SymbolTable;
 
 /* Struct which defines command operation address mode rules */
-typedef struct addressingMode {
+typedef struct AddressingMode {
     unsigned noOperand: 2,
             immediate: 2,
             direct: 2,
             matrix: 2,
             reg: 2;
-} addressingMode;
+} AddressingMode;
 
 /**
  * Struct which defines command data
@@ -62,15 +62,16 @@ typedef struct addressingMode {
 struct Command{
     char *cmd;
     int code;
-    addressingMode addressingMode_op1;
-    addressingMode addressingMode_op2;
+    AddressingMode addressingMode_op1;
+    AddressingMode addressingMode_op2;
 };
 
 /***********************************************************/
 /*              Symbol Table Handling Functions             *
  * ********************************************************/
 
-ErrorTypes updateSymbolTable(char *label,int address,int storageType,int isentry,int iscmd);
+ErrorTypes update_sym_table(char *label, int position, int format);
+ErrorTypes insert_to_symtab(char *label, int address, int position, int format, int iscmd);
 
 void free_symbtable(void);
 
@@ -80,9 +81,9 @@ void free_symbtable(void);
 /*              Data Array Handling Functions             *
  * ********************************************************/
 
-ErrorTypes updateData(char *directive,char *op2);
+ErrorTypes update_data(char *directive, char *op2);
 
-int getDc(void);
+int get_dc(void);
 
 void clear_data_stacks(void);
 
@@ -92,9 +93,9 @@ void set_offset(void);
 /*              Code Array Handling Functions             *
  * ********************************************************/
 
-ErrorTypes updateIc(char *cmd,char *op1,char *op2,int state);
+ErrorTypes update_code(char *cmd, char *op1, char *op2, int state);
 
-int getIc(void);
+int get_ic(void);
 
 void clear_code_arr(void);
 

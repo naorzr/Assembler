@@ -17,10 +17,10 @@ char *safe_strtok(char *str,const char *delim);
 void *safe_malloc(size_t size);
 
 
-void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems);
+void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems);
 
 
-AddressModeType getAddMode(char *op);
+AddressModeType get_add_mode(char *op);
 
 
 int cpy_mat_vals(const char *mat,char *arg1,char *arg2);

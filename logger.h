@@ -8,11 +8,11 @@ typedef enum
     LOG_ERROR,
     LOG_INFO,
     LOG_DEBUG
-} LOG_LEVEL;
+} LogLevel;
 
 #define SELECTED_LOG_LEVEL LOG_INFO
 
-void LOG_TRACE(LOG_LEVEL lvl, char *fmt, ... );
+void log_trace(LogLevel lvl, char *fmt, ...);
 
 
 #endif /*ENDPROJECT_LOGGER_H*/

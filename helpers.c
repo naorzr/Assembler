@@ -29,7 +29,7 @@ char* reverse(char* s)
  * @param fourBaseWord
  * @param nmems
  */
-void binToWeirdFour(unsigned int bin,char *fourBaseWord,unsigned nmems){
+void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems){
     unsigned mask;
     int i;
     char *head = fourBaseWord;
@@ -94,7 +94,7 @@ char *safe_strtok(char *str,const char *delim) {
  * @param op
  * @return the op address mode
  */
-AddressModeType getAddMode(char *op) {
+AddressModeType get_add_mode(char *op) {
     if (strcmp(op, "") == 0)
         return ADDMODE_NO_OPERAND;
     else if (op[0] == '#')

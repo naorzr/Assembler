@@ -101,14 +101,14 @@ int is_num(char *str){
 
 /**
  * Checks if a given string is a register
- * @param op
+ * @param str string to examine
  * @return true if the string was a register
  */
-int is_reg(char *op){
+int is_reg(char *str){
     extern const char *const REGISTERS[NUM_OF_REG];
     int i;
     for(i = 0;i < NUM_OF_REG;i++)
-        if(strcmp(REGISTERS[i],op) == 0)
+        if(strcmp(REGISTERS[i],str) == 0)
             return TRUE;
 
     return FALSE;
@@ -231,7 +231,7 @@ int valid_commas(char *str) {
  * @param cmdAddMode command addressing mode rules
  * @return error code
  */
-ErrorTypes isOpAddressModeValid(AddressModeType op, struct addressingMode cmdAddMode) {
+ErrorTypes isOpAddressModeValid(AddressModeType op, struct AddressingMode cmdAddMode) {
     int errFlag = FALSE;
     switch (op) {
         case ADDMODE_DIRECT:
