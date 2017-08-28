@@ -1,0 +1,2 @@
+assembler: main.c assembler.c assembler.h content_validation.c content_validation.h data_struct.c data_struct.h error_handler.c error_handler.h helpers.c helpers.h logger.c logger.h
+	gcc -Wall -pedantic -ansi  main.c assembler.c content_validation.c data_struct.c error_handler.c helpers.c logger.c -o assembler
