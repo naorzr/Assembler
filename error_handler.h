@@ -13,7 +13,7 @@ typedef enum {
     E_INV_MAT_PARAM,
     E_INV_MAT_INIT,
     E_INV_MAT_PARAM_SIZE,
-    E_INV_EXTRA_COMMA,
+    E_INV_COMMA,
     E_EXSS_MAT_VAL,
     E_STOP,
     E_DATA_MISSING_ARG,

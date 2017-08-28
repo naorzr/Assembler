@@ -69,8 +69,6 @@ ErrorTypes parse_line(char *lineContent, int passage) {
     /* case of an empty line */
     if ((word = safe_strtok(lineContent, " \t")) == NULL)
         return NO_ERR_OCCURRED;
-    if (!valid_commas(lineContent)) /* validate that there are no extra commas */
-        return E_INV_EXTRA_COMMA;
 
     /* case of label declaration */
     if (LABEL_DEC(word)) {
@@ -148,6 +146,10 @@ ErrorTypes parse_line(char *lineContent, int passage) {
     /* check that there are no extra words exceeding the line*/
     if (errCode == NO_ERR_OCCURRED && (safe_strtok(NULL, "")) != NULL)
         return E_INV_WORD;
+
+    /* validate that there are no invalid commas */
+    if (errCode == NO_ERR_OCCURRED && !validate_commas(lineContent))
+        return E_INV_COMMA;
 
     return errCode;
 }

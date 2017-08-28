@@ -25,8 +25,8 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_INV_WORD:
             strcpy(errMsg, "Invalid word");
             break;
-        case E_INV_EXTRA_COMMA:
-            strcpy(errMsg, "Excessive commas found");
+        case E_INV_COMMA:
+            strcpy(errMsg, "Invalid comma found");
             break;
         case E_INV_DIRECTIVE:
             strcpy(errMsg, "Invalid directive");

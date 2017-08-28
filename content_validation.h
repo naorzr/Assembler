@@ -48,7 +48,7 @@ int valid_mat_init(char *mat);
 
 int is_mat(char *str);
 
-int valid_commas(char *str);
+int validate_commas(char *str);
 
 int is_immediate(char *op);
 
