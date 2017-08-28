@@ -202,7 +202,8 @@ int valid_commas(char *str) {
     unsigned len = strlen(str);
     int     i,
             commaCount = 0,
-            inString = FALSE;
+            inString = FALSE,
+            index = 0;
 
     for (i = 0; i < len; i++) {
         if (str[i] == '"')
@@ -211,13 +212,17 @@ int valid_commas(char *str) {
             continue;
         if (isspace(str[i]))
             continue;
-        if (str[i] == ',')
+        if (str[i] == ',') {
             commaCount++;
+            if (index==0) /* line cannot begins with comma (excluding spaces) */
+                return FALSE;
+        }
         else
             commaCount = 0;
         /* comma cannot come after another comma */
         if (commaCount > 1)
             return FALSE;
+        index++;
     }
     /* line cannot end with a comma */
     return commaCount > 0 ? FALSE: TRUE;
