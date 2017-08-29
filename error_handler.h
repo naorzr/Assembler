@@ -1,6 +1,7 @@
 #ifndef ENDPROJECT_ERROR_HANDLER_H
 #define ENDPROJECT_ERROR_HANDLER_H
 
+/** Supported Error Types */
 typedef enum {
     E_LABEL,
     E_EXPECTED_ARG,
@@ -24,7 +25,7 @@ typedef enum {
     E_INVALID_DESTOP_ADDMODE,
     E_MISS_OP,
     NO_ERR_OCCURRED
-}ErrorTypes;
+} ErrorTypes;
 
 void print_error(ErrorTypes err, int lineNum, char *line);
 #endif /*ENDPROJECT_ERROR_HANDLER_H*/

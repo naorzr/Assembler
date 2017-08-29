@@ -3,8 +3,8 @@
 #include "logger.h"
 
 /**
- * Prints an error according to the error template
- * @param err Error Type
+ * Prints an error according to the error template and error code
+ * @param err Error Type from list of supported errors
  * @param lineNum Line Number
  * @param line Line Content
  */
