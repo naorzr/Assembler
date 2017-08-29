@@ -7,6 +7,7 @@
 
 #define MAX_LINE 81
 
+/* Enums for the assembler pass indicators */
 enum{FIRST_PASS, SECOND_PASS};
 /* TODO: might want to consider making the return type err_t , thus making the error process more natural */
 

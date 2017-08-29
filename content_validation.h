@@ -7,7 +7,7 @@
 
 enum {OFF};
 enum {FALSE,TRUE};
-
+/* Enums for the different addressing modes */
 typedef enum AddressModeType{
     ADDMODE_INVALID = -2,
     ADDMODE_NO_OPERAND = -1,
@@ -17,13 +17,13 @@ typedef enum AddressModeType{
     ADDMODE_REG = 3
 } AddressModeType;
 
-#define Is_External(label) strcmp((label),"extern") == 0
-#define Is_Entry(label)     strcmp((label),"entry") == 0
-#define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'
-#define Is_Directive(word)     (word)[0] == '.'
+#define Is_External(label) strcmp((label),"extern") == 0        /* Checks if a string is an external */
+#define Is_Entry(label)     strcmp((label),"entry") == 0        /* Checks if a string is an entry */
+#define LABEL_DEC(word)    (word)[(strlen((word)))-1] == ':'    /* Checks if a string is a label */
+#define Is_Directive(word)     (word)[0] == '.'                 /* Checks if a string is a directive */
 #define MIN_POS_INT 0
-#define MAX_POS_INT 512
-#define MAX_NEG_INT -512
+#define MAX_POS_INT 512                                         /* 10bit limitation in this assignment is between -511-511*/
+#define MAX_NEG_INT -512                                        /* 10bit limitation in this assignment is between -511-511*/
 #define MAX_LABEL_SIZE 30
 
 
