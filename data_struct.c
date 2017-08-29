@@ -63,7 +63,7 @@ static unsigned offset;     /* offset value used for adjusting data array addres
 static struct{
     const char * label;
     unsigned int address;
-} extref[MAX_FILE_SIZE] = {0};      /* stores the label and its appearences */
+} extref[MAX_FILE_SIZE] = {{0}};      /* stores the label and its appearences */
 static unsigned extref_ind = 0;
 
 
