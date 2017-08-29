@@ -408,8 +408,8 @@ void create_ob_file(char *fileName) {
     strcpy(outFileName, fileName);
 
     if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL) {
-        log_trace(LOG_ERROR, "Could not write to %s", "%s");
-        exit(EXIT_FAILURE);     /* TODO BARAK: why crashing? */
+        log_trace(LOG_ERROR, "Could not write to %s", outFileName);
+        exit(EXIT_FAILURE);     /* TODO Naor: why crashing?  - still relevant after the above change?*/
     }
     /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
     for (i = STARTING_ADD; i < ic; i++) {
