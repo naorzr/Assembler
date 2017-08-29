@@ -1,5 +1,6 @@
 #include <string.h>
 #include "helpers.h"
+#include "logger.h"
 
 /**
  * Reverses a string
@@ -62,8 +63,8 @@ void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems){
  */
 void *safe_malloc(size_t size){
     void *ptr = malloc(size);
-    if(ptr == NULL) {    /* TODO need to add code - error printing */
-        fprintf(stderr, "Could not allocate memory");
+    if(ptr == NULL) {
+        log_trace(LOG_ERROR, "Could not allocate memory");
         exit(EXIT_FAILURE);
     }
     return ptr;
@@ -142,20 +143,3 @@ int cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
 
     return TRUE;
 }
-
-/*
-char *safe_strtok(char *str, char *delim) {
-    static char *str_cpy, *head = NULL, *cur = NULL;
-    if (head == NULL)
-        head = str_cpy = safe_malloc(sizeof(char) * MAX_LINE);
-
-
-    if (cur == NULL && str != NULL)
-        str_cpy = strncpy(head, str, MAX_LINE);
-    else
-        str_cpy = NULL;
-    cur = strtok(str_cpy, delim);
-    return cur;
-}
-
- */
