@@ -57,24 +57,24 @@ static SymbolTable *symbolTab_head = NULL;
 
 static unsigned dc = 0;      /* data array address */
 static unsigned ic = 0;      /* code array address */
-static unsigned code[MAX_FILE_SIZE] = {0};  /* code array, stores all the command sentences data */
-static unsigned data[MAX_FILE_SIZE] = {0};  /* data array, stores all the directive sentences data */
+static unsigned code[MAX_STACK_SIZE] = {0};  /* code array, stores all the command sentences data */
+static unsigned data[MAX_STACK_SIZE] = {0};  /* data array, stores all the directive sentences data */
 static unsigned offset;     /* offset value used for adjusting data array address */
 static struct{
     const char * label;
     unsigned int address;
-} extref[MAX_FILE_SIZE] = {{0}};      /* stores the label and its appearences */
+} extref[MAX_STACK_SIZE] = {{0}};      /* stores the label and its appearences */
 static unsigned extref_ind = 0;
 
 void set_code_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_FILE_SIZE)
+    if(index >= MAX_STACK_SIZE)
         *err_code = CODE_STACK_OVERFLOW;
     code[index] |= value;
 }
 
 
 void set_data_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_FILE_SIZE)
+    if(index >= MAX_STACK_SIZE)
         *err_code = DATA_STACK_OVERFLOW;
     data[index] |= value;
 }

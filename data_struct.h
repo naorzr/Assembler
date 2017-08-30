@@ -6,7 +6,7 @@
 
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
-#define MAX_FILE_SIZE 256
+#define MAX_STACK_SIZE 256 /* defines the max size for stacks, which means that the data, code, ext ref stacks are limited to 256  */
 #define WORD_LEN 5
 #define ADDRESS_LEN 4
 #define STARTING_ADD 100
