@@ -4,17 +4,17 @@
 #include "assembler.h"
 #include "content_validation.h"
 
-#define NUM_OF_REG 8
-#define NUM_OF_CMDS 16
+#define NUM_OF_REG 8        /* Number of registers */
+#define NUM_OF_CMDS 16      /* Number of commands */
 #define MAX_FILE_SIZE 256
-#define WORD_LEN 5
-#define ADDRESS_LEN 4
-#define STARTING_ADD 100
-#define OUT_EXT ".ext"
-#define OUT_ENT ".ent"
-#define OUT_OB ".ob"
-#define IN_EXT ".as"
-#define MAX_FILE_NAME 256
+#define WORD_LEN 5          /* weird base 4 word length in the exported file */
+#define ADDRESS_LEN 4       /* weird base 4 address length in the exported file */
+#define STARTING_ADD 100    /* the starting address of code array(not to be confused with the array index */
+#define OUT_EXT ".ext"      /* output postfix for external file */
+#define OUT_ENT ".ent"      /* output postfix for entry file */
+#define OUT_OB ".ob"        /* output postfix for object file */
+#define IN_EXT ".as"        /* input postfix for assembly file */
+#define MAX_FILE_NAME 256   /* maximal file name length */
 
 #define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (SymbolTable *) safe_malloc(sizeof(SymbolTable));\
                                                 strcpy(node->label,(lab));\
@@ -29,7 +29,7 @@ enum CmdOpType{SRC_OP, DEST_OP};
 
 /* Encoding types - Absolute(kept for readability, even though not used)/external/relocatable */
 enum Positions{ABSOLUTE, EXTERNAL, RELOCATABLE};
-enum {EXTERNAL_ADDRESS = 0, ENTRY=10, NONE_ENTRY = 11,CMD2=4, NOT_CMD2=5};
+enum {EXTERNAL_ADDRESS, ENTRY, NONE_ENTRY,CMD2, NOT_CMD2};
 
 /* symbol table node */
 typedef struct SymbolTable{
@@ -70,6 +70,7 @@ struct Command{
  * ********************************************************/
 
 ErrorTypes update_sym_table(char *label, int position, int format);
+
 ErrorTypes insert_to_symtab(char *label, int address, int position, int format, int iscmd);
 
 void free_symbtable(void);
