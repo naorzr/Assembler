@@ -23,6 +23,6 @@ void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems);
 AddressModeType get_add_mode(char *op);
 
 
-int cpy_mat_vals(const char *mat,char *arg1,char *arg2);
+void cpy_mat_vals(const char *mat,char *arg1,char *arg2);
 
 #endif /*ENDPROJECT_HELPERS_H*/

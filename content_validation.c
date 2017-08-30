@@ -150,7 +150,7 @@ int valid_parentheses(char *str){
 /**
  * Checks if the matrix initializers are valid
  * @param mat
- * @return
+ * @return true if the matrix initializers are valid
  */
 int valid_mat_init(char *mat){
     char arg1[MAX_LINE],arg2[MAX_LINE];
@@ -165,7 +165,7 @@ int valid_mat_init(char *mat){
 /**
  * Checks matrix arguments validity
  * @param str matrix string
- * @return
+ * @return true if matrix args are valid
  */
 int is_mat(char *str) {
     char arg1[MAX_LINE] = "", arg2[MAX_LINE] = "";
@@ -234,7 +234,7 @@ int validate_commas(char *str) {
  * Checks if operand addressing mode is valid with a given command
  * @param op Operand addressing mode
  * @param cmdAddMode command addressing mode rules
- * @return error code
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes isOpAddressModeValid(AddressModeType op, struct AddressingMode cmdAddMode) {
     int errFlag = FALSE;
@@ -266,7 +266,7 @@ ErrorTypes isOpAddressModeValid(AddressModeType op, struct AddressingMode cmdAdd
  * @param cmd command
  * @param src_op source operand addressing mode
  * @param dest_op destination operand addressing mode
- * @return error code
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes valid_address_mode(char *cmd, AddressModeType src_op, AddressModeType dest_op) {
     extern const struct Command COMMANDS[NUM_OF_CMDS];

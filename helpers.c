@@ -4,8 +4,8 @@
 
 /**
  * Reverses a string
- * @param s
- * @return
+ * @param s the string to be reversed
+ * @return the reversed string
  */
 char* reverse(char* s)
 {
@@ -58,9 +58,8 @@ void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems){
 
 /**
  * Wrapper for the malloc method
- * @param size
- * @return
- */
+ * @param size Size of type
+  */
 void *safe_malloc(size_t size){
     void *ptr = malloc(size);
     if(ptr == NULL) {
@@ -72,9 +71,9 @@ void *safe_malloc(size_t size){
 
 /**
  * Wrapper for the strok method
- * @param str
- * @param delim
- * @return
+ * @param str String to be breaked into tokens
+ * @param delim Delimiter to the next word
+ * @return a pointer to the last token found in the string. A null pointer is returned if there are no tokens left to retrieve.
  */
 char *safe_strtok(char *str,const char *delim) {
     static char str_cpy[MAX_LINE],*cur;
@@ -117,8 +116,13 @@ AddressModeType get_add_mode(char *op) {
     }
 }
 
-
-int cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
+/**
+ * Copies the matrix args into arg1 and arg2
+ * @param mat the matrix as string
+ * @param arg1 the first arg initializer as string
+ * @param arg2 the 2nd arg initializer as string
+ */
+void cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
     char *op1, *op2;
     int i;
     char temp_mat[MAX_LINE] = "";
@@ -140,6 +144,4 @@ int cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
         else
             arg2[i] = *op2;
     arg2[i] = '\0';
-
-    return TRUE;
 }

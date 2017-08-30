@@ -86,14 +86,14 @@ void set_data_val(int index,int value,ErrorTypes *err_code){
 
 
 /**
- * inserts a new node into the symbol table
+ * Inserts a new node into the symbol table
  * symbol table is represented as a binary search tree.
  * @param label
  * @param address
  * @param position
  * @param format
  * @param iscmd
- * @return
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes insert_to_symtab(char *label, int address, int position, int format, int iscmd) {
     SymbolTable *node,*ptr;
@@ -138,14 +138,14 @@ ErrorTypes insert_to_symtab(char *label, int address, int position, int format, 
  * @param position
  * @param format
  * @param iscmd
- * @return error type code
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes update_sym_table(char *label, int position, int format) {
     SymbolTable *ptr;
 
     ptr = symbolTab_head;
 
-    while(ptr != NULL) {
+    while (ptr != NULL) {
         if (strcmp(ptr->label,label) == 0) {
             /* updating label position and format */
             ptr->format = format;
@@ -233,13 +233,13 @@ void free_symbtable(void){
  * ********************************************************/
 
 /**
- * updates the data array with the binary representation of the given operand
+ * Updates the data array with the binary representation of the given operand
  * @param directive directive name
  * @param op_string a string containing all the directive operands
- * @return
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes update_data(char *directive, char *op_string) {
-    ErrorTypes errCode;
+    ErrorTypes errCode = NO_ERR_OCCURRED;
     char arg1[MAX_LINE], arg2[MAX_LINE];    /* will be used for matrix values in case needed */
     char *param;
     int bitword, mat_word_size = 0;
@@ -312,7 +312,7 @@ ErrorTypes update_data(char *directive, char *op_string) {
             dc++;
     }
 
-    return NO_ERR_OCCURRED;
+    return errCode;
 }
 
 /**
@@ -353,7 +353,7 @@ void clear_data_stacks(void){
  * @param src_op
  * @param dest_op
  * @param passage
- * @return error codes
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     ErrorTypes errCode;

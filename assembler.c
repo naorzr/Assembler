@@ -8,7 +8,7 @@ char* get_line_content(FILE *inpf);
 ErrorTypes parse_line(char *lineContent,int passage);
 
 /**
- * Takes in a file and parse all the content, translating it to binary code and storing it in the relevant data structs
+ * Takes in a file and parses all the content line by line, translating it to binary code and storing it in the relevant data structs
  * @param inpf file input stream
  * @param passage Type of passage (first/second)
  * @return In case of an error returns the specific type of error
@@ -39,6 +39,9 @@ ErrorTypes parse_file(FILE *inpf, int passage) {
         if ((error = parse_line(lineContent, passage)) != NO_ERR_OCCURRED) {
             print_error(error, lineNum, lineContent);
             flag.stop = TRUE;
+            /* stop parsing the file if reached the max file size */
+            if (error == DATA_STACK_OVERFLOW || error == CODE_STACK_OVERFLOW)
+                break;
         }
     }
     return flag.stop == TRUE? E_STOP: NO_ERR_OCCURRED;    /* if an error has occurred tells the program to halt from going into second pass */
@@ -48,7 +51,7 @@ ErrorTypes parse_file(FILE *inpf, int passage) {
  * Parse each word in the line, storing it in the relevant data struct and converting to binary if needed
  * @param lineContent line to parse
  * @param passage current passage of the program on the current line(first pass or second)
- * @return error type in case of an error
+ * @return In case of an error returns the specific type of error
  */
 ErrorTypes parse_line(char *lineContent, int passage) {
     int dc, ic;
@@ -174,7 +177,7 @@ char* get_line_content(FILE *inpf){
     static char lineContent[MAX_LINE] = "";
     char *lineptr = lineContent;
 
-    if(fgets(lineContent, MAX_LINE, inpf) != NULL) {
+    if (fgets(lineContent, MAX_LINE, inpf) != NULL) {
         Skip_Space(lineptr);
         if (lineptr[strlen(lineptr) - 1] == '\n')   /* removes the newline for simpler handling later with strtok */
             lineptr[strlen(lineptr) - 1] = '\0';
