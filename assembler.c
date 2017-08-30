@@ -165,7 +165,6 @@ void export_assembly_files(char *outName){
     create_ob_file(outName);
     create_ext_file(outName);
     create_ent_file(outName);
-    test(outName);
 }
 
 /**

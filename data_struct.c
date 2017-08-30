@@ -176,7 +176,7 @@ SymbolTable *get_symbolId(char *label){
  */
 int sym_to_bin(SymbolTable *symb) {
     int address = 0;
-    /* TODO: NAOR/BARAK Find a better position for this script */
+
     if (symb->position == EXTERNAL) {       /* if it's an external symbol updates the place it was used in the file in the extref array */
         extref[extref_ind].address = ic + STARTING_ADD + 1;        /* place it was used in file */
         extref[extref_ind].label = symb->label;
@@ -601,51 +601,3 @@ void free_ext_ref(void) {
     memset(&extref, 0, sizeof(extref));
 }
 
-/* TODO NAOR: TO delete this before submiting the work */
-/********************************************************************************************/
-
-/* to use the tester, create 3 files that should be tested against. with a postfix of .test
-         * for example filename.as.test or filename.ent.test */
-void test(char *filename1){
-    int i = 3,j = 0;
-    char str[10];
-    char filename[20000] ="";
-    char s1[10000],s2[10000];
-    FILE *testob1,*testob2;
-
-    while(i) {
-        strcpy(filename, filename1);
-        if(i == 3)
-            strcpy(str,".ob");
-        if(i == 2)
-            strcpy(str,".ent");
-        if(i == 1)
-            strcpy(str,".ext");
-        testob1 = fopen(strcat(filename, str), "r");
-        testob2 = fopen(strcat(filename, ".test"), "r");
-        j = STARTING_ADD;
-        if (testob1 == NULL || testob2 == NULL)
-            return;
-        printf("\n****************************************************\n\nComparing %s %s Files:\n\n",filename1,&str[1]);
-        while (fgets(s1, 100, testob1) && fgets(s2, 100, testob2)) {
-            \
-        if (strchr(s1, '\n'))
-                *strchr(s1, '\n') = '\0';
-            if (strchr(s2, '\n'))
-                *strchr(s2, '\n') = '\0';
-
-            printf("%d: (%s)\t(%s)\t", j, s1, s2);
-            if (strcmp(s1, s2) != 0)
-                printf("** No Match **\n");
-            else
-                printf("**  MATCH  **\n");
-
-            j++;
-        }
-        i--;
-        fclose(testob1);
-        fclose(testob2);
-    }
-    printf("\n");
-
-}
