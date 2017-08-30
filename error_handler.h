@@ -26,7 +26,7 @@ typedef enum {
     E_MISS_OP,          /* missing operand */
     NO_ERR_OCCURRED,
     CODE_STACK_OVERFLOW,
-    DATA_STACK_OVERFLOW,
+    DATA_STACK_OVERFLOW
 } ErrorTypes;
 
 /**
