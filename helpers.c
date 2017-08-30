@@ -57,7 +57,7 @@ void bin_to_weird4(unsigned int bin, char *fourBaseWord, unsigned nmems){
 }
 
 /**
- * Wrapper for the malloc method
+ * Wrapper for the malloc method. validates memory allocation and prints error if needed
  * @param size Size of type
   */
 void *safe_malloc(size_t size){
@@ -70,7 +70,7 @@ void *safe_malloc(size_t size){
 }
 
 /**
- * Wrapper for the strok method
+ * Wrapper for the strok method, keeps the string unmutated
  * @param str String to be breaked into tokens
  * @param delim Delimiter to the next word
  * @return a pointer to the last token found in the string. A null pointer is returned if there are no tokens left to retrieve.
@@ -92,7 +92,7 @@ char *safe_strtok(char *str,const char *delim) {
 /**
  * Gets the operand address mode
  * @param op
- * @return the op address mode
+ * @return the op address mode(e.g IMMEDIATE,DIRECT,REGISTER etc)
  */
 AddressModeType get_add_mode(char *op) {
     if (strcmp(op, "") == 0)
@@ -127,8 +127,6 @@ void cpy_mat_vals(const char *mat, char *arg1, char *arg2) {
     int i;
     char temp_mat[MAX_LINE] = "";
     strcpy(temp_mat, mat);
-    /* TODO: fix that skip space with the temp_mat. function not working cause its an array being passed(allocate dynamic memory) */
-
     op1 = strchr(mat, '[');
     for (i = 0; i < MAX_LINE && *(++op1) != ']'; i++)
         if (isspace(*op1))

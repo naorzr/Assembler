@@ -69,9 +69,34 @@ struct Command{
 /*              Symbol Table Handling Functions             *
  * ********************************************************/
 
+/**
+ * Update a symbol with new data. used for updating labels preceded by entry directive
+ * @param label
+ * @param position - ABSOLUTE/EXTERNAL/RELOCATABLE
+ * @param format - ENTRY/NONE ENTRY
+ * @param iscmd
+ * @return In case of an error returns the specific type of error
+ */
 ErrorTypes update_sym_table(char *label, int position, int format);
+
+
+
+/**
+ * Inserts a new node into the symbol table
+ * symbol table is represented as a binary search tree.
+ * @param label
+ * @param address - ic or dc address
+ * @param position - ABSOLUTE/EXTERNAL/RELOCATABLE
+ * @param format - ENTRY/NONE ENTRY
+ * @param iscmd
+ * @return In case of an error returns the specific type of error
+ */
 ErrorTypes insert_to_symtab(char *label, int address, int position, int format, int iscmd);
 
+
+/**
+ * frees the whole symbol table, send in to the internal function free_symtree the symbol table head.
+ */
 void free_symbtable(void);
 
 
@@ -80,22 +105,56 @@ void free_symbtable(void);
 /*              Data Array Handling Functions             *
  * ********************************************************/
 
-ErrorTypes update_data(char *directive, char *op2);
-
+/**
+ * Getter for the DC address
+ * @return
+ */
 int get_dc(void);
 
+/**
+ * Updates the data array with the binary representation of the given operand
+ * @param directive directive name
+ * @param op_string a string containing all the directive operands
+ * @return In case of an error returns the specific type of error
+ */
+ErrorTypes update_data(char *directive, char *op2);
+
+
+/**
+ * Clears the data stacks
+ */
 void clear_data_stacks(void);
 
+/**
+ * Sets the offset value for the relocatable labels address
+ */
 void set_offset(void);
 
 /***********************************************************/
 /*              Code Array Handling Functions             *
  * ********************************************************/
 
+
+/**
+ * Checks the validity of the address mode according to the command rules,
+ * and updates the code arr with the binary code of the cmd+op if no errors occurred.
+ * @param cmd
+ * @param src_op - source operand to process
+ * @param dest_op - destination operand to process
+ * @param passage - FIRST/SECOND passage
+ * @return In case of an error returns the specific type of error
+ */
 ErrorTypes update_code(char *cmd, char *op1, char *op2, int state);
 
+/**
+ * Getter for the IC address
+ * @return
+ */
 int get_ic(void);
 
+/**
+ * Clears the code array
+ */
 void clear_code_arr(void);
 
 
@@ -103,16 +162,32 @@ void clear_code_arr(void);
 /*              File Exporting Functions                   *
  * ********************************************************/
 
+/**
+ * Creates assembler object file - all data is presented as weird 4
+ * @param fileName - file name for exporting
+ */
 void create_ob_file(char *outf);
 
+/**
+ * Creates assembler entry file - all data is presented as weird 4
+ * @param fileName - file name for exporting
+ */
 void create_ent_file(char *outf);
 
+/**
+ * Creates assembler external file - all data is presented as weird 4
+ * @param fileName - file name for exporting
+ */
 void create_ext_file(char *outf);
 
 
 /***********************************************************/
 /*              Miscellaneous Functions                    *
  * ********************************************************/
+
+/**
+ * Frees the external reference
+ */
 void free_ext_ref(void);
 
 

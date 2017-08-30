@@ -3,8 +3,10 @@
 #include "content_validation.h"
 #include "helpers.h"
 
+
 /**
- * Check if string is label
+ * Check if string is label(starts with a letter,
+ * contains only alpha numeric characters and is no longer than 30 characters)
  * @param label
  * @return true if string is label
  */
@@ -22,7 +24,7 @@ int is_label(char *label){
 }
 
 /**
- * Checks if sting refers to data/string/mat
+ * Checks if a word refers to data/string/mat
  * @param word
  * @return true if string is data/string/mat
  */
@@ -148,7 +150,7 @@ int valid_parentheses(char *str){
 }
 
 /**
- * Checks if the matrix initializers are valid
+ * Checks if the matrix initializers are valid(i.e has valid parentheses and valid arguments)
  * @param mat
  * @return true if the matrix initializers are valid
  */
@@ -263,7 +265,7 @@ ErrorTypes isOpAddressModeValid(AddressModeType op, struct AddressingMode cmdAdd
 
 /**
  * Validate if the addressing modes are correct
- * @param cmd command
+ * @param cmd command(e.g sub prn etc)
  * @param src_op source operand addressing mode
  * @param dest_op destination operand addressing mode
  * @return In case of an error returns the specific type of error
@@ -290,9 +292,11 @@ ErrorTypes valid_address_mode(char *cmd, AddressModeType src_op, AddressModeType
 }
 
 /**
- * Checks if a number is valid (between 511 and -511)
+ * Checks if a number has a valid value
+ * value is determined by the size of bits that could be stored in a single word
+ * in our case its between -512 and 511
  * @param num
- * @return
+ * @return boolean true/false
  */
 int valid_num_val(int num) {
     return num < MAX_POS_INT && num > MAX_NEG_INT;
