@@ -66,18 +66,7 @@ static struct{
 } extref[MAX_STACK_SIZE] = {{0}};      /* stores the label and its appearences */
 static unsigned extref_ind = 0;
 
-void set_code_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_STACK_SIZE)
-        *err_code = CODE_STACK_OVERFLOW;
-    code[index] |= value;
-}
 
-
-void set_data_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_STACK_SIZE)
-        *err_code = DATA_STACK_OVERFLOW;
-    data[index] |= value;
-}
 
 /***********************************************************/
 /*              Symbol Table Handling Functions             *
@@ -89,9 +78,9 @@ void set_data_val(int index,int value,ErrorTypes *err_code){
  * Inserts a new node into the symbol table
  * symbol table is represented as a binary search tree.
  * @param label
- * @param address
- * @param position
- * @param format
+ * @param address - ic or dc address
+ * @param position - ABSOLUTE/EXTERNAL/RELOCATABLE
+ * @param format - ENTRY/NONE ENTRY
  * @param iscmd
  * @return In case of an error returns the specific type of error
  */
@@ -135,8 +124,8 @@ ErrorTypes insert_to_symtab(char *label, int address, int position, int format, 
 /**
  * Update a symbol with new data. used for updating labels preceded by entry directive
  * @param label
- * @param position
- * @param format
+ * @param position - ABSOLUTE/EXTERNAL/RELOCATABLE
+ * @param format - ENTRY/NONE ENTRY
  * @param iscmd
  * @return In case of an error returns the specific type of error
  */
@@ -232,6 +221,28 @@ void free_symbtable(void){
 /*              Data Array Handling Functions             *
  * ********************************************************/
 
+
+/**
+ * setting data array value in a specific index
+ * @param index - index between 0 to MAX_STACK_SIZE
+ * @param value - to store inside the code array
+ * @param err_code
+ */
+void set_data_val(int index,int value,ErrorTypes *err_code){
+    if(index >= MAX_STACK_SIZE)
+        *err_code = DATA_STACK_OVERFLOW;
+    data[index] |= value;
+}
+
+
+/**
+ * Getter for the DC address
+ * @return
+ */
+int get_dc(void){
+    return dc+STARTING_ADD;
+}
+
 /**
  * Updates the data array with the binary representation of the given operand
  * @param directive directive name
@@ -315,16 +326,9 @@ ErrorTypes update_data(char *directive, char *op_string) {
     return errCode;
 }
 
-/**
- * Getter for the DC address
- * @return
- */
-int get_dc(void){
-    return dc+STARTING_ADD;
-}
 
 /**
- * Sets the address ic offset
+ * Sets the offset value for the relocatable labels address
  */
 void set_offset(void){
     offset = ic;
@@ -346,13 +350,34 @@ void clear_data_stacks(void){
 /*              Code Array Handling Functions             *
  * ********************************************************/
 
+
+/**
+ * setting code array value in a specific index
+ * @param index - index between 0 to MAX_STACK_SIZE
+ * @param value - to store inside the code array
+ * @param err_code
+ */
+void set_code_val(int index,int value,ErrorTypes *err_code){
+    if(index >= MAX_STACK_SIZE)
+        *err_code = CODE_STACK_OVERFLOW;
+    code[index] |= value;
+}
+
+/**
+ * Getter for the IC address
+ * @return
+ */
+int get_ic(void){
+    return ic+STARTING_ADD;
+}
+
 /**
  * Checks the validity of the address mode according to the command rules,
  * and updates the code arr with the binary code of the cmd+op if no errors occurred.
  * @param cmd
- * @param src_op
- * @param dest_op
- * @param passage
+ * @param src_op - source operand to process
+ * @param dest_op - destination operand to process
+ * @param passage - FIRST/SECOND passage
  * @return In case of an error returns the specific type of error
  */
 ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
@@ -386,13 +411,6 @@ ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     return errCode;
 }
 
-/**
- * Getter for the IC address
- * @return
- */
-int get_ic(void){
-    return ic+STARTING_ADD;
-}
 
 
 /**
@@ -410,7 +428,7 @@ void clear_code_arr(void) {
 
 /**
  * Creates assembler object file - all data is presented as weird 4
- * @param fileName
+ * @param fileName - file name for exporting
  */
 void create_ob_file(char *fileName) {
     char outFileName[FILENAME_MAX];
@@ -420,31 +438,30 @@ void create_ob_file(char *fileName) {
     FILE *outf;
     strcpy(outFileName, fileName);
 
-    if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL) {
+    if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL)
         log_trace(LOG_ERROR, "Could not write to %s", outFileName);
-        exit(EXIT_FAILURE);     /* TODO Naor: why crashing?  - still relevant after the above change?*/
+    else {
+        /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
+        for (i = 0; i < ic; i++) {
+            bin_to_weird4(i + STARTING_ADD, address, ADDRESS_LEN);
+            fprintf(outf, "%.4s\t", address);
+            bin_to_weird4(code[i], word, WORD_LEN);
+            fprintf(outf, "%.5s\n", word);
+        }
+        /* traverse data array, convert and stores the data from binary to weird 4 in an output file*/
+        for (i = 0; i < dc; i++) {
+            bin_to_weird4(i + STARTING_ADD + offset, address, ADDRESS_LEN);
+            fprintf(outf, "%.4s\t", address);
+            bin_to_weird4(data[i], word, WORD_LEN);
+            fprintf(outf, "%.5s\n", word);
+        }
+        fclose(outf);
     }
-    /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
-    for (i = 0; i < ic; i++) {
-        bin_to_weird4(i+STARTING_ADD, address, ADDRESS_LEN);
-        fprintf(outf, "%.4s\t", address);
-        bin_to_weird4(code[i], word, WORD_LEN);
-        fprintf(outf, "%.5s\n", word);
-    }
-    /* traverse data array, convert and stores the data from binary to weird 4 in an output file*/
-    for (i = 0; i < dc; i++) {
-        bin_to_weird4(i + STARTING_ADD + offset, address, ADDRESS_LEN);
-        fprintf(outf, "%.4s\t", address);
-        bin_to_weird4(data[i], word, WORD_LEN);
-        fprintf(outf, "%.5s\n", word);
-    }
-
-    fclose(outf);
 }
 
 /**
  * Creates assembler external file - all data is presented as weird 4
- * @param fileName
+ * @param fileName - file name for exporting
  */
 void create_ext_file(char *fileName) {
     char outFileName[MAX_FILE_NAME];
@@ -453,17 +470,16 @@ void create_ext_file(char *fileName) {
     FILE *outf;
     strcpy(outFileName, fileName);
 
-    if ((outf = fopen(strcat(outFileName, OUT_EXT), "w")) == NULL) {
+    if ((outf = fopen(strcat(outFileName, OUT_EXT), "w")) == NULL)
         fprintf(stderr, "Could not write to %s", "%s");
-        exit(EXIT_FAILURE);
+    else {
+        /* traverse extref and print all the data into output file as weird 4 */
+        for (i = 0; i < extref_ind; i++) {
+            bin_to_weird4(extref[i].address, address, ADDRESS_LEN);
+            fprintf(outf, "%s\t%s\n", extref[i].label, address);
+        }
+        fclose(outf);
     }
-    /* traverse extref and print all the data into output file as weird 4 */
-    for (i = 0; i < extref_ind; i++) {
-        bin_to_weird4(extref[i].address , address, ADDRESS_LEN);
-        fprintf(outf, "%s\t%s\n", extref[i].label, address);
-    }
-
-    fclose(outf);
 }
 
 /**
@@ -487,20 +503,18 @@ void print_ent(FILE *outf, SymbolTable *symnode) {
 
 /**
  * Creates assembler entry file - all data is presented as weird 4
- * @param fileName
+ * @param fileName - file name for exporting
  */
 void create_ent_file(char *fileName) {
     FILE *outf;
     char outFileName[MAX_FILE_NAME];
     strcpy(outFileName, fileName);
-    if ((outf = fopen(strcat(outFileName, OUT_ENT), "w")) == NULL) {
+    if ((outf = fopen(strcat(outFileName, OUT_ENT), "w")) == NULL)
         log_trace(LOG_ERROR, "Could not write to %s", "%s");
-        exit(EXIT_FAILURE);
+    else {
+        print_ent(outf, symbolTab_head);
+        fclose(outf);
     }
-
-    print_ent(outf, symbolTab_head);
-
-    fclose(outf);
 }
 
 

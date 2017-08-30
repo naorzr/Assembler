@@ -18,6 +18,10 @@ enum{FIRST_PASS, SECOND_PASS};
  */
 ErrorTypes parse_file(FILE *inpf,int passage);
 
+/**
+ * Create assembly output files (.ext, .ob, .ent)
+ * @param outName file name to output
+ */
 void export_assembly_files(char *outName);
 
 #endif /*ENDPROJECT_ASSEMBLER_H*/
