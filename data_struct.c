@@ -71,7 +71,7 @@ void set_code_val(int index,int value,ErrorTypes *err_code){
         fprintf(stderr,"Err..");
         *err_code = CODE_STACK_OVERFLOW;
     }
-    code[index] = value;
+    code[index] |= value;
 }
 
 
@@ -80,7 +80,7 @@ void set_data_val(int index,int value,ErrorTypes *err_code){
         fprintf(stderr,"Err..");
         *err_code = DATA_STACK_OVERFLOW;
     }
-    data[index] = value;
+    data[index] |= value;
 }
 
 /***********************************************************/
@@ -157,9 +157,9 @@ ErrorTypes update_sym_table(char *label, int position, int format) {
             return NO_ERR_OCCURRED;
         }
         else if (strcmp(ptr->label,label) < 0) {
-                ptr = ptr->left;
+            ptr = ptr->left;
         } else {
-                ptr = ptr->right;
+            ptr = ptr->right;
         }
     }
     return E_UNDECLARED_SYMBOL;
@@ -268,7 +268,7 @@ ErrorTypes update_data(char *directive, char *op_string) {
 
         } while ((param = safe_strtok(NULL, ",NULL")) != NULL);
 
-    /* case its a string directive */
+        /* case its a string directive */
     } else if (strcmp(directive, "string") == 0) {
         param = safe_strtok(op_string, "");
         if (param == NULL || !is_string(param)) {
@@ -283,7 +283,7 @@ ErrorTypes update_data(char *directive, char *op_string) {
 
         data[dc++] = 0;     /* terminating null ascii representation */
 
-    /* case its a matrix directive */
+        /* case its a matrix directive */
     } else if (strcmp(directive, "mat") == 0) {
         param = safe_strtok(op_string, " ");
 
@@ -374,12 +374,12 @@ ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     /* coding the command to a bit-word and updating the array */
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
-            code[ic] |= COMMANDS[i].code << 6;  /* 6-9 bits */
+            set_code_val(ic,COMMANDS[i].code << 6,&errCode);  /* 6-9 bits */
             break;
         }
     }
-    code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : (int)srcop_mode) << 4;   /* 4-5 bits */
-    code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : (int)destop_mode) << 2;     /* 2-3 bits */
+    set_code_val(ic,(srcop_mode == ADDMODE_NO_OPERAND ? 0 : (int)srcop_mode) << 4,&errCode);   /* 4-5 bits */
+    set_code_val(ic,(destop_mode == ADDMODE_NO_OPERAND ? 0 : (int)destop_mode) << 2,&errCode);     /* 2-3 bits */
 
     /* passing the command operand to the internal function cmdop_to_bin to process the operand
      * converting it to binary and storing it into the code array */
@@ -541,32 +541,32 @@ void cmdop_to_bin(char *operand, AddressModeType mode, int op_type, int passage,
             bits = atoi(&operand[1]);
             if (bits < 0)
                 bits = ~((-1) * bits) + 1;  /* 2's complement representation */
-            code[++ic] |= bits << 2;
+            set_code_val(++ic,bits << 2,errCode);
             break;
         case ADDMODE_DIRECT:
             if(passage == FIRST_PASS)
-                code[++ic] |= 0;
+                set_code_val(++ic,0,errCode);
             else {
                 if((symbolId = get_symbolId(operand)) != NULL)  /* check if symbol exists at the 2nd pass */
-                    code[++ic] |= sym_to_bin(symbolId);
+                    set_code_val(++ic,sym_to_bin(symbolId),errCode);
                 else
                     *errCode = E_UNDECLARED_SYMBOL;
             }
             break;
         case ADDMODE_MATRIX:
             if (passage == FIRST_PASS)
-                ic++;       /* no label adress yet, progressing one step */
+                set_code_val(++ic,0,errCode);       /* no label adress yet, progressing one step */
             else if (passage == SECOND_PASS) {      /* get the symbol */
                 strncpy(label, operand, strchr(operand, '[') - operand);    /* copies the label part */
                 if((symbolId = get_symbolId(label)) == NULL) {  /* fetch symbol */
                     *errCode = E_UNDECLARED_SYMBOL;
                     break;
                 }
-                code[++ic] |= sym_to_bin(get_symbolId(label));
+                set_code_val(++ic,sym_to_bin(get_symbolId(label)),errCode);
             }
 
             cpy_mat_vals(operand, arg1, arg2);
-            code[++ic] |= (atoi(&arg1[1]) << 6) | atoi(&arg2[1]) << 2;         /* update code array with both init registers binary representation */
+            set_code_val(++ic,(atoi(&arg1[1]) << 6) | atoi(&arg2[1]) << 2,errCode);         /* update code array with both init registers binary representation */
             break;
         case ADDMODE_REG:
             if (op_type == SRC_OP)
@@ -574,10 +574,10 @@ void cmdop_to_bin(char *operand, AddressModeType mode, int op_type, int passage,
             if (op_type == DEST_OP && flag.is_srcop_reg != TRUE)        /* if the register is independent , store it in a different word */
                 ic++;
             bits = atoi(&operand[1]);
-            code[ic] |= bits << (op_type == SRC_OP ? 6 : 2);
+            set_code_val(ic,bits << (op_type == SRC_OP ? 6 : 2),errCode);
             break;
         case ADDMODE_NO_OPERAND:
-            code[ic] |= 0;
+            set_code_val(ic,0,errCode);
         default:
             return;
     }
@@ -639,6 +639,3 @@ void test(char *filename1){
     printf("\n");
 
 }
-
-
-
