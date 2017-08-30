@@ -13,10 +13,10 @@ add  #5,#6
 ; 4. Error: invalid destination operand (immediate)
 inc  #50
 
-; 5. Error: invalid instruction
+; 5. Error: invalid word (and)
 and  r1,r2
 
-; 6. Error: invalid instruction (case sensitivity)
+; 6. Error: invalid word (jSr - instructions are case sensitive)
 jSr  Start
 
 ; 7. this line is ok (r9 is a label declared later)
