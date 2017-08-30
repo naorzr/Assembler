@@ -1,8 +1,9 @@
-; Example file for errors for maman 14 (mostly around the first passage)
-; ----------------------------------------------------------------------
+; Example file for errors for maman 14
+;   (mostly around the first passage)
+; ------------------------------------
 
 ; 1. this line is ok
-    .extern DATA4
+.extern DATA4
 
 ; 2. Error: invalid destination operand (immediate)
 add  #5,#6

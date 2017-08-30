@@ -28,12 +28,6 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_INV_COMMA:
             strcpy(errMsg, "Invalid comma found");
             break;
-        case E_INV_DIRECTIVE:
-            strcpy(errMsg, "Invalid directive");
-            break;
-        case E_STOP:
-            strcpy(errMsg, "Expected argument");
-            break;
         case E_LABEL_REDECLARED:
             strcpy(errMsg, "Duplicate label declaration");
             break;
