@@ -67,19 +67,15 @@ static struct{
 static unsigned extref_ind = 0;
 
 void set_code_val(int index,int value,ErrorTypes *err_code){
-    if(index < MAX_FILE_SIZE){
-        fprintf(stderr,"Err..");
+    if(index >= MAX_FILE_SIZE)
         *err_code = CODE_STACK_OVERFLOW;
-    }
     code[index] |= value;
 }
 
 
 void set_data_val(int index,int value,ErrorTypes *err_code){
-    if(index < MAX_FILE_SIZE){
-        fprintf(stderr,"Err..");
+    if(index >= MAX_FILE_SIZE)
         *err_code = DATA_STACK_OVERFLOW;
-    }
     data[index] |= value;
 }
 
@@ -243,7 +239,7 @@ void free_symbtable(void){
  * @return
  */
 ErrorTypes update_data(char *directive, char *op_string) {
-
+    ErrorTypes errCode;
     char arg1[MAX_LINE], arg2[MAX_LINE];    /* will be used for matrix values in case needed */
     char *param;
     int bitword, mat_word_size = 0;
@@ -264,7 +260,7 @@ ErrorTypes update_data(char *directive, char *op_string) {
 
             if (bitword < 0)
                 bitword = ~(bitword * -1) + 1;      /* 2's complement representation */
-            data[dc++] = (unsigned) bitword;
+            set_data_val(dc++,(unsigned) bitword,&errCode);
 
         } while ((param = safe_strtok(NULL, ",NULL")) != NULL);
 
@@ -279,9 +275,9 @@ ErrorTypes update_data(char *directive, char *op_string) {
         param = &param[1];
 
         while (*param)
-            data[dc++] = (unsigned) *(param++);     /* update data array with the ascii coding binary*/
+            set_data_val(dc++, (unsigned) *(param++) ,&errCode);     /* update data array with the ascii coding binary*/
 
-        data[dc++] = 0;     /* terminating null ascii representation */
+        set_data_val(dc++, 0, &errCode);     /* terminating null ascii representation */
 
         /* case its a matrix directive */
     } else if (strcmp(directive, "mat") == 0) {
@@ -310,7 +306,7 @@ ErrorTypes update_data(char *directive, char *op_string) {
             if (bitword < 0)
                 bitword = ~(bitword * -1) + 1;  /* 2's complement representation */
 
-            data[dc++] = (unsigned) bitword;
+            set_data_val(dc++, (unsigned) bitword, &errCode);
         }
         while (mat_word_size--)     /* partial initialization(e.g .mat [2][3] 1,2,1) will result in zeros fillings */
             dc++;
