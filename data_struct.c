@@ -48,28 +48,36 @@ const struct Command COMMANDS[] = {
 
 /* cmdop_to_bin: internal function, converts a string to a binary word */
 void cmdop_to_bin(char *str, AddressModeType mode, int op_type, int passage, ErrorTypes *errCode);
-
 /* List of available registers r0-r7 */
 const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+
 
 static SymbolTable *symbolTab_head = NULL;
 
 
 static unsigned dc = 0;      /* data array address */
 static unsigned ic = 0;      /* code array address */
-static unsigned code[MAX_FILE_SIZE] = {0};  /* code array, stores all the command sentences data */
-static unsigned data[MAX_FILE_SIZE] = {0};  /* data array, stores all the directive sentences data */
+static unsigned code[MAX_STACK_SIZE] = {0};  /* code array, stores all the command sentences data */
+static unsigned data[MAX_STACK_SIZE] = {0};  /* data array, stores all the directive sentences data */
 static unsigned offset;     /* offset value used for adjusting data array address */
 static struct{
     const char * label;
     unsigned int address;
-} extref[MAX_FILE_SIZE] = {{0}};      /* stores the label and its appearences */
+} extref[MAX_STACK_SIZE] = {{0}};      /* stores the label and its appearences */
 static unsigned extref_ind = 0;
 
+void set_code_val(int index,int value,ErrorTypes *err_code){
+    if(index >= MAX_STACK_SIZE)
+        *err_code = CODE_STACK_OVERFLOW;
+    code[index] |= value;
+}
 
 
-
-
+void set_data_val(int index,int value,ErrorTypes *err_code){
+    if(index >= MAX_STACK_SIZE)
+        *err_code = DATA_STACK_OVERFLOW;
+    data[index] |= value;
+}
 
 /***********************************************************/
 /*              Symbol Table Handling Functions             *
@@ -82,8 +90,8 @@ static unsigned extref_ind = 0;
  * symbol table is represented as a binary search tree.
  * @param label
  * @param address
- * @param position - (ABSOLUTE,EXTERNAL,RELOCATABLE)
- * @param format - Entry or None Entry
+ * @param position
+ * @param format
  * @param iscmd
  * @return In case of an error returns the specific type of error
  */
@@ -225,28 +233,6 @@ void free_symbtable(void){
  * ********************************************************/
 
 /**
- * takes in a value and an index and updates the data array accordingly.
- * in case of index out of bounds stores an error in the err_code.
- * @param index - index for the data array
- * @param value - value to be stored in the data array
- * @param err_code
- */
-void set_data_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_FILE_SIZE)
-        *err_code = DATA_STACK_OVERFLOW;
-    data[index] |= value;
-}
-
-
-/**
- * Getter for the DC address
- * @return
- */
-int get_dc(void){
-    return dc+STARTING_ADD;
-}
-
-/**
  * Updates the data array with the binary representation of the given operand
  * @param directive directive name
  * @param op_string a string containing all the directive operands
@@ -329,6 +315,13 @@ ErrorTypes update_data(char *directive, char *op_string) {
     return errCode;
 }
 
+/**
+ * Getter for the DC address
+ * @return
+ */
+int get_dc(void){
+    return dc+STARTING_ADD;
+}
 
 /**
  * Sets the address ic offset
@@ -352,29 +345,6 @@ void clear_data_stacks(void){
 /***********************************************************/
 /*              Code Array Handling Functions             *
  * ********************************************************/
-
-
-/**
- * takes in a value and an index and updates the code array accordingly.
- * in case of index out of bounds stores an error in the err_code.
- * @param index - index for the code array
- * @param value - value to be stored in the code array
- * @param err_code
- */
-void set_code_val(int index,int value,ErrorTypes *err_code){
-    if(index >= MAX_FILE_SIZE)
-        *err_code = CODE_STACK_OVERFLOW;
-    code[index] |= value;
-}
-
-
-/**
- * Getter for the IC address
- * @return
- */
-int get_ic(void){
-    return ic+STARTING_ADD;
-}
 
 /**
  * Checks the validity of the address mode according to the command rules,
@@ -416,6 +386,14 @@ ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     return errCode;
 }
 
+/**
+ * Getter for the IC address
+ * @return
+ */
+int get_ic(void){
+    return ic+STARTING_ADD;
+}
+
 
 /**
  * Clears the code array
@@ -432,7 +410,7 @@ void clear_code_arr(void) {
 
 /**
  * Creates assembler object file - all data is presented as weird 4
- * @param fileName - file name will be appended to a predetermined postfix
+ * @param fileName
  */
 void create_ob_file(char *fileName) {
     char outFileName[FILENAME_MAX];
@@ -442,31 +420,31 @@ void create_ob_file(char *fileName) {
     FILE *outf;
     strcpy(outFileName, fileName);
 
-    if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL)
+    if ((outf = fopen(strcat(outFileName, OUT_OB), "w")) == NULL) {
         log_trace(LOG_ERROR, "Could not write to %s", outFileName);
-    else {
-        /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
-        for (i = 0; i < ic; i++) {
-            bin_to_weird4(i + STARTING_ADD, address, ADDRESS_LEN);
-            fprintf(outf, "%.4s\t", address);
-            bin_to_weird4(code[i], word, WORD_LEN);
-            fprintf(outf, "%.5s\n", word);
-        }
-        /* traverse data array, convert and stores the data from binary to weird 4 in an output file*/
-        for (i = 0; i < dc; i++) {
-            bin_to_weird4(i + STARTING_ADD + offset, address, ADDRESS_LEN);
-            fprintf(outf, "%.4s\t", address);
-            bin_to_weird4(data[i], word, WORD_LEN);
-            fprintf(outf, "%.5s\n", word);
-        }
-        fclose(outf);
+        exit(EXIT_FAILURE);     /* TODO Naor: why crashing?  - still relevant after the above change?*/
+    }
+    /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
+    for (i = 0; i < ic; i++) {
+        bin_to_weird4(i+STARTING_ADD, address, ADDRESS_LEN);
+        fprintf(outf, "%.4s\t", address);
+        bin_to_weird4(code[i], word, WORD_LEN);
+        fprintf(outf, "%.5s\n", word);
+    }
+    /* traverse data array, convert and stores the data from binary to weird 4 in an output file*/
+    for (i = 0; i < dc; i++) {
+        bin_to_weird4(i + STARTING_ADD + offset, address, ADDRESS_LEN);
+        fprintf(outf, "%.4s\t", address);
+        bin_to_weird4(data[i], word, WORD_LEN);
+        fprintf(outf, "%.5s\n", word);
     }
 
+    fclose(outf);
 }
 
 /**
  * Creates assembler external file - all data is presented as weird 4
- * @param fileName - file name will be appended to a predetermined postfix
+ * @param fileName
  */
 void create_ext_file(char *fileName) {
     char outFileName[MAX_FILE_NAME];
@@ -475,16 +453,17 @@ void create_ext_file(char *fileName) {
     FILE *outf;
     strcpy(outFileName, fileName);
 
-    if ((outf = fopen(strcat(outFileName, OUT_EXT), "w")) == NULL)
+    if ((outf = fopen(strcat(outFileName, OUT_EXT), "w")) == NULL) {
         fprintf(stderr, "Could not write to %s", "%s");
-    else {
-        /* traverse extref and print all the data into output file as weird 4 */
-        for (i = 0; i < extref_ind; i++) {
-            bin_to_weird4(extref[i].address, address, ADDRESS_LEN);
-            fprintf(outf, "%s\t%s\n", extref[i].label, address);
-        }
-        fclose(outf);
+        exit(EXIT_FAILURE);
     }
+    /* traverse extref and print all the data into output file as weird 4 */
+    for (i = 0; i < extref_ind; i++) {
+        bin_to_weird4(extref[i].address , address, ADDRESS_LEN);
+        fprintf(outf, "%s\t%s\n", extref[i].label, address);
+    }
+
+    fclose(outf);
 }
 
 /**
@@ -508,20 +487,20 @@ void print_ent(FILE *outf, SymbolTable *symnode) {
 
 /**
  * Creates assembler entry file - all data is presented as weird 4
- * @param fileName - file name will be appended to a predetermined postfix
+ * @param fileName
  */
 void create_ent_file(char *fileName) {
     FILE *outf;
     char outFileName[MAX_FILE_NAME];
     strcpy(outFileName, fileName);
-    if ((outf = fopen(strcat(outFileName, OUT_ENT), "w")) == NULL)
+    if ((outf = fopen(strcat(outFileName, OUT_ENT), "w")) == NULL) {
         log_trace(LOG_ERROR, "Could not write to %s", "%s");
-    else {
-        print_ent(outf, symbolTab_head);
-        fclose(outf);
+        exit(EXIT_FAILURE);
     }
 
+    print_ent(outf, symbolTab_head);
 
+    fclose(outf);
 }
 
 
