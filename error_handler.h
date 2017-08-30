@@ -24,7 +24,9 @@ typedef enum {
     E_INVALID_SRCOP_ADDMODE,
     E_INVALID_DESTOP_ADDMODE,
     E_MISS_OP,
-    NO_ERR_OCCURRED
+    NO_ERR_OCCURRED,
+    CODE_STACK_OVERFLOW,
+    DATA_STACK_OVERFLOW,
 } ErrorTypes;
 
 void print_error(ErrorTypes err, int lineNum, char *line);

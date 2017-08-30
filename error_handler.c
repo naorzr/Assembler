@@ -73,6 +73,12 @@ void print_error(ErrorTypes err, int lineNum, char *line){
         case E_DATA_MISSING_ARG:
             strcpy(errMsg, "Data missing argument");
             break;
+        case CODE_STACK_OVERFLOW:
+            strcpy(errMsg, "Code stack overflow");
+            break;
+        case DATA_STACK_OVERFLOW:
+            strcpy(errMsg, "Data stack overflow");
+            break;
         default:
             strcpy(errMsg, "General error occurred");
             break;

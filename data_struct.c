@@ -55,8 +55,8 @@ const char *const REGISTERS[NUM_OF_REG] = {"r0", "r1", "r2", "r3", "r4", "r5", "
 static SymbolTable *symbolTab_head = NULL;
 
 
-static unsigned dc = STARTING_ADD;      /* data array address */
-static unsigned ic = STARTING_ADD;      /* code array address */
+static unsigned dc = 0;      /* data array address */
+static unsigned ic = 0;      /* code array address */
 static unsigned code[MAX_FILE_SIZE] = {0};  /* code array, stores all the command sentences data */
 static unsigned data[MAX_FILE_SIZE] = {0};  /* data array, stores all the directive sentences data */
 static unsigned offset;     /* offset value used for adjusting data array address */
@@ -66,7 +66,22 @@ static struct{
 } extref[MAX_FILE_SIZE] = {{0}};      /* stores the label and its appearences */
 static unsigned extref_ind = 0;
 
+void set_code_val(int index,int value,ErrorTypes *err_code){
+    if(index < MAX_FILE_SIZE){
+        fprintf(stderr,"Err..");
+        *err_code = CODE_STACK_OVERFLOW;
+    }
+    code[index] = value;
+}
 
+
+void set_data_val(int index,int value,ErrorTypes *err_code){
+    if(index < MAX_FILE_SIZE){
+        fprintf(stderr,"Err..");
+        *err_code = DATA_STACK_OVERFLOW;
+    }
+    data[index] = value;
+}
 
 /***********************************************************/
 /*              Symbol Table Handling Functions             *
@@ -178,7 +193,7 @@ int sym_to_bin(SymbolTable *symb) {
     int address = 0;
     /* TODO: NAOR/BARAK Find a better position for this script */
     if (symb->position == EXTERNAL) {       /* if it's an external symbol updates the place it was used in the file in the extref array */
-        extref[extref_ind].address = ic + 1;        /* place it was used in file */
+        extref[extref_ind].address = ic + STARTING_ADD + 1;        /* place it was used in file */
         extref[extref_ind].label = symb->label;
         extref_ind++;
     }
@@ -305,27 +320,27 @@ ErrorTypes update_data(char *directive, char *op_string) {
 }
 
 /**
- * Getter for the DC variable
+ * Getter for the DC address
  * @return
  */
 int get_dc(void){
-    return dc;
+    return dc+STARTING_ADD;
 }
 
 /**
  * Sets the address ic offset
  */
 void set_offset(void){
-    offset = ic-STARTING_ADD;
+    offset = ic;
 }
 
 /**
  * Clears the data stacks
  */
 void clear_data_stacks(void){
-    while(dc > STARTING_ADD)
+    while(dc > 0)
         data[dc--] = 0;
-    while(ic > STARTING_ADD)
+    while(ic > 0)
         data[ic--] = 0;
     data[dc] = 0;
     data[ic] = 0;
@@ -355,6 +370,7 @@ ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     if ((errCode = valid_address_mode(cmd, srcop_mode, destop_mode)) != NO_ERR_OCCURRED)
         return errCode;
 
+
     /* coding the command to a bit-word and updating the array */
     for (i = 0; i < NUM_OF_CMDS; i++) {
         if (strcmp(cmd, COMMANDS[i].cmd) == 0) {
@@ -365,20 +381,21 @@ ErrorTypes update_code(char *cmd, char *src_op, char *dest_op, int passage) {
     code[ic] |= (srcop_mode == ADDMODE_NO_OPERAND ? 0 : (int)srcop_mode) << 4;   /* 4-5 bits */
     code[ic] |= (destop_mode == ADDMODE_NO_OPERAND ? 0 : (int)destop_mode) << 2;     /* 2-3 bits */
 
-    /* TODO BARAK: not quite sure about the implementation here..the fact that this function alters the code array itself + the index seems odd what do you think ? */
-    cmdop_to_bin(src_op, srcop_mode, SRC_OP, passage, &errCode);      /* converts source operand to a bit-word and stores in code*/
-    cmdop_to_bin(dest_op, destop_mode, DEST_OP, passage, &errCode);       /* converts destination operand to a bit-word and stores in code */
+    /* passing the command operand to the internal function cmdop_to_bin to process the operand
+     * converting it to binary and storing it into the code array */
+    cmdop_to_bin(src_op, srcop_mode, SRC_OP, passage, &errCode);
+    cmdop_to_bin(dest_op, destop_mode, DEST_OP, passage, &errCode);
 
     ic++;
     return errCode;
 }
 
 /**
- * Getter for the IC variable
+ * Getter for the IC address
  * @return
  */
 int get_ic(void){
-    return ic;
+    return ic+STARTING_ADD;
 }
 
 
@@ -412,15 +429,15 @@ void create_ob_file(char *fileName) {
         exit(EXIT_FAILURE);     /* TODO Naor: why crashing?  - still relevant after the above change?*/
     }
     /* traverse code array, convert and stores the data from binary to weird 4 in an output file*/
-    for (i = STARTING_ADD; i < ic; i++) {
-        bin_to_weird4(i, address, ADDRESS_LEN);
+    for (i = 0; i < ic; i++) {
+        bin_to_weird4(i+STARTING_ADD, address, ADDRESS_LEN);
         fprintf(outf, "%.4s\t", address);
         bin_to_weird4(code[i], word, WORD_LEN);
         fprintf(outf, "%.5s\n", word);
     }
     /* traverse data array, convert and stores the data from binary to weird 4 in an output file*/
-    for (i = STARTING_ADD; i < dc; i++) {
-        bin_to_weird4(i + offset, address, ADDRESS_LEN);
+    for (i = 0; i < dc; i++) {
+        bin_to_weird4(i + STARTING_ADD + offset, address, ADDRESS_LEN);
         fprintf(outf, "%.4s\t", address);
         bin_to_weird4(data[i], word, WORD_LEN);
         fprintf(outf, "%.5s\n", word);
@@ -446,7 +463,7 @@ void create_ext_file(char *fileName) {
     }
     /* traverse extref and print all the data into output file as weird 4 */
     for (i = 0; i < extref_ind; i++) {
-        bin_to_weird4(extref[i].address, address, ADDRESS_LEN);
+        bin_to_weird4(extref[i].address , address, ADDRESS_LEN);
         fprintf(outf, "%s\t%s\n", extref[i].label, address);
     }
 
@@ -463,8 +480,9 @@ void print_ent(FILE *outf, SymbolTable *symnode) {
     if (symnode == NULL)
         return;
     else if (symnode->format == ENTRY) {
-        bin_to_weird4(symnode->address + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE ? offset : 0),
-                      address, ADDRESS_LEN);
+        bin_to_weird4(symnode->address  + (symnode->iscmd == NOT_CMD2 && symnode->position == RELOCATABLE ? offset : 0),
+                      address,
+                      ADDRESS_LEN);
         fprintf(outf, "%s\t%s\n", symnode->label, address);
     }
     print_ent(outf, symnode->right);
@@ -621,8 +639,6 @@ void test(char *filename1){
     printf("\n");
 
 }
-
-
 
 
 

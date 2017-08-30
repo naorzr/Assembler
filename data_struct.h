@@ -4,8 +4,6 @@
 #include "assembler.h"
 #include "content_validation.h"
 
-/* TODO: IMPORTANT!!! 23/8/17 need to check if it is allowed to define max file size or only max line */
-#define LOOP  for(;;)
 #define NUM_OF_REG 8
 #define NUM_OF_CMDS 16
 #define MAX_FILE_SIZE 256
@@ -17,6 +15,7 @@
 #define OUT_OB ".ob"
 #define IN_EXT ".as"
 #define MAX_FILE_NAME 256
+
 #define NEW_SYMTABLE_NODE(lab,add,position,format,iscmd)  (SymbolTable *) safe_malloc(sizeof(SymbolTable));\
                                                 strcpy(node->label,(lab));\
                                                 node->address = (add);\
